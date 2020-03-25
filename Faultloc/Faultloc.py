@@ -69,7 +69,7 @@ def BtnLoadFaultFile_Click():
 
     loadClassFile()
 
-
+# loads the class file and it contents into the GUI
 def loadClassFile():
     global nrc
     nrc = len(xcldata)  # N rows class, row count
@@ -89,7 +89,9 @@ def loadClassFile():
             allclass[j].add(xcldata[i][j])
 
 
+# actions when load nominal file btn is clicked
 def nomButton_Click():
+    #prompts uder to pick a file from their computer
     global filenameNominal
     filenameNominal = filedialog.askopenfilename(initialdir="/", title="Select Nominal File", filetypes=(("csv files","*.csv"),("all files","*.*")))
     txtNominalInfo.insert(0, filenameNominal)
@@ -103,8 +105,9 @@ def nomButton_Click():
 
     loadNomFile()
 
-
+# loads the nominal fault file into the program
 def loadNomFile():
+    #determines certain attributes about the nominal data
     global nrn
     nrn = len(ncldata)
     global ncn
@@ -131,9 +134,9 @@ def btnTest_Click():
     if var4Way.get() == 1:
         getFourWayResults()
     if var5Way.get() == 1:
-        print("five way test")
+        getFiveWayResults()
     if var6Way.get() == 1:
-        print("Six way test")
+        getSixWayResults()
 
 
 # Computes the statistics needed for the finding all results
@@ -144,6 +147,7 @@ def computeValueSettings():
         vset = (xclass[i].copy()).union(nonclass[i])
         nvals.append(len(vset))
 
+    # finds the number of combinations in 2,3 and 4 way data
     global ncoms2
     global ncoms3
     global ncoms4
@@ -151,6 +155,7 @@ def computeValueSettings():
     ncoms3 = int(math.factorial(ncc) / (6 * math.factorial(ncc - 3)))
     ncoms4 = int(math.factorial(ncc) / (24 * math.factorial(ncc - 4)))
 
+    # finds the number of values in 1,2,3,4 way testing
     global totvals1
     global totvals2
     global totvals3
@@ -450,6 +455,14 @@ def getFourWayResults():
     canvas_widget.grid(row=3, column=0)
 
 
+def getFiveWayResults():
+    # add functionality later
+    print()
+
+
+def getSixWayResults():
+    # add functionality later
+    print()
 
 # clears the UI objects
 def ClearUI():
