@@ -21,8 +21,8 @@ from pylab import *
 # load class file into array
 filenameClass = ""
 xcldata = list()
-nrc = 0
-ncc = 0
+nrc = 0  # number of rows class file
+ncc = 0  # number of columns class file
 xclass = set()
 ctxclass = list()
 allclass = set()
@@ -30,8 +30,8 @@ allclass = set()
 # load nominal file into array
 filenameNominal = ""
 ncldata = list()
-nrn = 0
-ncn = 0
+nrn = 0   # number of rows nominal file
+ncn = 0  # number of columns nominal file
 nonclass = set()
 ######################
 # compute total possible variable-value settings
@@ -213,22 +213,36 @@ def get2WayResults():
     sys.stderr.write("2way diffs done {0}\n".format(datetime.datetime.now()))
 
     # output 2way diffs
-    tot2waydiffs = 0
+    t2_settings = ncoms2  # total possible 2-way settings of variables
+    heatmap2 = [[]]
+
     for i in range(ncc - 1):
         for j in range(i + 1, ncc):
-            if len(diff2way[i][j]) > 0:
-                tot2waydiffs += len(diff2way[i][j])
+            for rf in range(1, nrc):
+                in_pass_count = 0
+                for rp in range(1, nrn):
+                    if (xcldata[rf][i] == ncldata[rp][i] and xcldata[rf][j] == ncldata[rp][j]):
+                        in_pass_count += 1
 
-                pass_count = 0
-                for xtup in diff2way[i][j]:
-                    output = str(i) + str(j) + xtup[0] + xtup[1] + " = " + str(pass_count/ncc) + "of cases"
-                    TwoWayList.insert(END, ' '.join(output))
-                    if diff2way[i][j] == xtup:
-                        pass_count += 1
+                heatmap2.append(in_pass_count / (nrc - 1))
+                output = "{0} = {1} of cases, {2}, {3}, = {4},{5}\n".format(in_pass_count, in_pass_count / (nrc - 1),
+                                                                            xcldata[0][i], xcldata[0][j],
+                                                                            xcldata[rf][i], xcldata[rf][j])
+                TwoWayList.insert(END, ' '.join(output))
+
     TwoWayList.grid(row=3, column=0, ipadx=200, ipady=150)
     statBox2Way.config(command=TwoWayList.yview)
 
-    rptBox2Way.insert(0, "Combinations = " + str(ncc) + " , Settings = " + str(ncc*ncc))  # TODO -- FIX
+    for i in range(ncc):
+        for rf in range(1, nrc):
+            in_pass_count = 0
+            for rp in range(nrn):
+                if (xcldata[rf][i] == ncldata[rp][i]):
+                    in_pass_count += 1
+
+            output = "{0} occurrences = {1} of cases, {2} = {3}\n".format(in_pass_count, in_pass_count / (nrn - 1),
+                                                                          xcldata[0][i],
+                                                                          xcldata[rf][i])
 
     # creates and outputs two way coverage plots
     yvals2 = []
@@ -314,21 +328,27 @@ def getThreeWayResults():
     sys.stderr.write("3way diffs done {0}\n".format(datetime.datetime.now()))
 
     # output 3way diffs
-    tot3waydiffs = 0
+    total_coms = 0
+
     for i in range(ncc - 2):
         for j in range(i + 1, ncc - 1):
             for k in range(j + 1, ncc):
-                if len(diff3way[i][j][k]) > 0:
-                    tot3waydiffs += len(diff3way[i][j][k])
-                    pass_count = 0
-                    for xtup in diff3way[i][j][k]:
-                        output = str(i) + str(j) + str(k) + xtup[0] + xtup[1] + xtup[2] + " = " + str(pass_count/ncc) + " of cases"
-                        ThreeWayList.insert(END, ' '.join(output))
-                        if diff3way[i][j] == xtup:
-                            pass_count += 1
-    ThreeWayList.grid(row=3, ipadx=200, ipady=150)
+                total_coms += 1
+                for rf in range(1, nrc):
+                    in_pass_count = 0
+                    for rp in range(1, nrn):
+                        if (xcldata[rf][i] == ncldata[rp][i] and xcldata[rf][j] == ncldata[rp][j] and xcldata[rf][k] ==
+                                ncldata[rp][k]):
+                            in_pass_count += 1
+                    output = "{0} = {1} of cases, {2}, {3}, {4} = {5},{6}, {7}\n".format(in_pass_count,
+                                                                                         in_pass_count / (nrc - 1),
+                                                                                         xcldata[0][i], xcldata[0][j],
+                                                                                         xcldata[0][k], xcldata[rf][i],
+                                                                                         xcldata[rf][j], xcldata[rf][k])
+                    ThreeWayList.insert(END, ' '.join(output))
+
+    ThreeWayList.grid(row=3, column=0, ipadx=200, ipady=150)
     statBox3Way.config(command=ThreeWayList.yview)
-    rptBox3Way.insert(0,"Combinations = " + str(ncc) + " , Settings = " + str(ncc * ncc * ncc))  # TODO -- FIX
 
     # display graph for diffs
     yvals3 = []
@@ -408,29 +428,29 @@ def getFourWayResults():
     sys.stderr.write("4way diffs done {0}\n".format(datetime.datetime.now()))
 
     # output 4way diffs
-    tot4waydiffs = 0
-    f4 = open('diff4way.csv', 'w')
-    f4.write("i,j,k,m,  ival,jval,kval,mval\n")
-    for i in range(ncc - 3):
-        for j in range(i + 1, ncc - 2):
-            for k in range(j + 1, ncc - 1):
-                for m in range(k + 1, ncc):
-                    if len(diff4way[i][j][k][m]) > 0:
-                        # print("4way ", i,j,k,m)
-                        # for tup1 in diff4way[i][j][k][m]:
-                        #    print(tup1)
-                        tot4waydiffs += len(diff4way[i][j][k][m])
-                        pass_count = 0
-                        for xtup in diff4way[i][j][k][m]:
-                            output = str(i) + str(j) + str(k) + str(m) + xtup[0] + xtup[1] + xtup[2] + xtup[3] + " = " + str(pass_count / ncc) + " of cases"
-                            FourWayList.insert(END, ' '.join(output))
-                            if diff4way[i][j] == xtup:
-                                pass_count += 1
+    for i in range(ncn-3):
+        for j in range(i+1, ncn-2):
+            for k in range(j+1, ncn-1):
+                for l in range(k+1, ncn):
+                    for rf in range(1, nrc):
+                        in_pass_count = 0
+                        for rp in range(1, nrn):
+                            if (xcldata[rf][i] == ncldata[rp][i] and xcldata[rf][j] == ncldata[rp][j] and xcldata[rf][k] == ncldata[rp][k] and xcldata[rf][l] == ncldata[rp][l]):
+                                in_pass_count += 1
+                        output = "{0} = {1} of cases, {2}, {3}, {4}, {5} = {6},{7}, {8}, {9}\n".format(in_pass_count,
+                                                                                             in_pass_count / (nrc - 1),
+                                                                                             xcldata[0][i],
+                                                                                             xcldata[0][j],
+                                                                                             xcldata[0][k],
+                                                                                             xcldata[0][l],
+                                                                                             xcldata[rf][i],
+                                                                                             xcldata[rf][j],
+                                                                                             xcldata[rf][k],
+                                                                                             xcldata[rf][l])
+                        FourWayList.insert(END, ' '.join(output))
 
-    FourWayList.grid(row=3, ipadx=200, ipady=150)
+    FourWayList.grid(row=3, column=0, ipadx=200, ipady=150)
     statBox4Way.config(command=FourWayList.yview)
-    rptBox4Way.insert(0, "Combinations = " + str(ncc) + " , Settings = " + str(ncc * ncc * ncc))  # TODO -- FIX
-
     # 4way coverage plot
     yvals4 = []
     for i in range(ncc - 3):
@@ -456,13 +476,68 @@ def getFourWayResults():
 
 
 def getFiveWayResults():
-    # add functionality later
-    print()
+    for i in range(ncn - 4):
+        for j in range(i + 1, ncn - 3):
+            for k in range(j + 1, ncn - 2):
+                for l in range(k + 1, ncn - 1):
+                    for m in range(l + 1, ncn):
+                        for rf in range(1, nrc):
+                            in_pass_count = 0
+                            for rp in range(1, nrn):
+                                if (xcldata[rf][i] == ncldata[rp][i] and xcldata[rf][j] == ncldata[rp][j] and
+                                        xcldata[rf][k] == ncldata[rp][k] and xcldata[rf][l] == ncldata[rp][l]):
+                                    in_pass_count += 1
+                            output = "{0} = {1} of cases, {2}, {3}, {4}, {5}, {6} = {7},{8}, {9}, {10}\n".format(
+                                in_pass_count,
+                                in_pass_count / (nrc - 1),
+                                xcldata[0][i],
+                                xcldata[0][j],
+                                xcldata[0][k],
+                                xcldata[0][l],
+                                xcldata[0][m],
+                                xcldata[rf][i],
+                                xcldata[rf][j],
+                                xcldata[rf][k],
+                                xcldata[rf][l],
+                                xcldata[rf][m])
+                            FiveWayList.insert(END, ' '.join(output))
+
+    FiveWayList.grid(row=3, column=0, ipadx=200, ipady=150)
+    statBox5Way.config(command=FiveWayList.yview)
 
 
 def getSixWayResults():
-    # add functionality later
-    print()
+    for i in range(ncn - 5):
+        for j in range(i + 1, ncn - 4):
+            for k in range(j + 1, ncn - 3):
+                for l in range(k + 1, ncn - 2):
+                    for m in range(l + 1, ncn - 1):
+                        for n in range(m + 1, ncn):
+                            for rf in range(1, nrc):
+                                in_pass_count = 0
+                                for rp in range(1, nrn):
+                                    if (xcldata[rf][i] == ncldata[rp][i] and xcldata[rf][j] == ncldata[rp][j] and
+                                            xcldata[rf][k] == ncldata[rp][k] and xcldata[rf][l] == ncldata[rp][l]):
+                                        in_pass_count += 1
+                                output = "{0} = {1} of cases, {2}, {3}, {4}, {5}, {6}, {7} = {8},{9}, {10}, {11}, {12}\n".format(
+                                    in_pass_count,
+                                    in_pass_count / (nrc - 1),
+                                    xcldata[0][i],
+                                    xcldata[0][j],
+                                    xcldata[0][k],
+                                    xcldata[0][l],
+                                    xcldata[0][m],
+                                    xcldata[0][n],
+                                    xcldata[rf][i],
+                                    xcldata[rf][j],
+                                    xcldata[rf][k],
+                                    xcldata[rf][l],
+                                    xcldata[rf][m],
+                                    xcldata[rf][n])
+                                SixWayList.insert(END, ' '.join(output))
+
+    SixWayList.grid(row=3, column=0, ipadx=200, ipady=150)
+    statBox6Way.config(command=SixWayList.yview)
 
 # clears the UI objects
 def ClearUI():
