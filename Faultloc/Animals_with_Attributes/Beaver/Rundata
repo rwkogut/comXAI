@@ -1,0 +1,87 @@
+# converted from fault locator pass -> non-class; fail -> class
+#echo randomize lines of data set with ../rl data_file >data_file_rand
+#echo split data_file_rand into _trn and _tst for class and nonClass
+#echo run Faultloc on training files to get class \ nonClass
+#echo run getcoms
+#echo mv c2 cnotn
+#echo run Faultloc on training files to get nonClass \ class
+#echo run getcoms
+#echo mv c2 nnotc
+#
+# split class test files into single line files with fx prefix
+# using split -a 3 -l 1 class_trn.csv fx
+
+
+#echo Rundata nominal_file  fault_file on _tst test files
+#
+echo Ncoms in nonClass
+pl=`cat $1 | wc -l`
+pp=`grep -o -f nnotc $1 |wc -l`
+echo $pp
+ppavg=$(( $pp / $pl ))
+echo $ppavg per record
+
+echo Ncoms in class
+pf=`grep -o -f nnotc $2 |wc -l`
+echo $pf
+pfavg=$(( $pf / $pl ))
+echo $pfavg per record
+
+echo Ccoms in nonClass
+fp=`grep -o -f cnotn $1 |wc -l`
+echo $fp
+fpavg=$(( $fp / $pl ))
+echo $fpavg per record
+
+
+echo Ccoms in class
+ff=`grep -o -f cnotn $2 |wc -l`
+echo $ff
+ffavg=$(( $ff / $pl ))
+echo $ffavg per record
+
+#
+echo "Ccoms in nonClass should be < avg Ccoms in Class: $ffavg "
+echo "Ncoms in nonClass should be > avg Ncoms in Class: $pfavg "
+echo "Ccoms in class should be > avg Ccoms in nonClass: $fpavg "
+echo "Ncoms in class should be < avg Ncoms in nonClass: $ppavg "
+#  P => f<ff & p>pf
+#  F => f>fp & p<pp
+#  f >= ff | p <= pf => ~P => F
+#  f <= fp | p >= pp => ~F => P
+#
+#
+echo Determine class of class file records: Class, nonClass, Unknown
+for i in `ls fx*`
+do
+  echo " $f  ::   $p "
+  echo ">> \c"
+  f=`grep  -o -f cnotn $i |wc -l`
+  p=`grep  -o -f nnotc $i |wc -l`
+  if  [ $f -gt $p ]
+     then 
+       echo Class
+  elif  [ $f -lt $p ]
+     then 
+       echo nonClass
+  else
+       echo Unknown
+  fi
+done
+
+#do
+#  echo ">> \c"
+#  f=`grep  -o -f cnotn $i |wc -l`
+#  p=`grep  -o -f nnotc $i |wc -l`
+#  echo " $f  ::   $p "
+#  if  [ $f -gt $ffavg ] || [ $p -lt $pfavg ]
+#     then 
+#       echo Class
+#  elif  [ $f -lt $fpavg ] || [ $p -gt $ppavg ]
+#     then 
+#       echo nonClass
+#  else
+#       echo Unknown
+#  fi
+#done
+#

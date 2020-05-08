@@ -1,0 +1,10 @@
+# Mkclass class_file
+# generates training and test files from class_file
+# training = c-trn.csv;  test = c-tst.csv
+# training is 80% of input file; test is 20%
+nlines=`cat $1 |wc -l`
+ntrn=$(( ($nlines * 8) / 10 ))
+ntst=$(( $nlines - $ntrn ))
+echo $ntrn
+head -n $ntrn $1 >c-trn.csv
+tail -n $ntst $1 >c-tst.csv

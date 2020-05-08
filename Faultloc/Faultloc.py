@@ -1,73 +1,76 @@
+# imports classes needed for tkinter -- the gui library
 from __future__ import division
 from tkinter import *
 from tkinter import ttk
 from tkinter import filedialog
-
+import tkinter as tk
 import csv
-import sys
-import math
-import itertools
-import datetime
-from datetime import timedelta
-from collections import Counter
 
+# imports classes needed for the graph creation
 import matplotlib
 matplotlib.use('TkAgg')
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib import pyplot as plt
 from pylab import *
+import time
 
 #####################
-# load class file into array
-filenameClass = ""
-xcldata = list()
+filenameClass = ""  # path of the class file
+xcldata = list()  # stores the class data in a list
 nrc = 0  # number of rows class file
 ncc = 0  # number of columns class file
-xclass = set()
-ctxclass = list()
-allclass = set()
+xclass = set()  # stores the class data in a set
+ctxclass = list()  # stores the class data in a list
+allclass = set() # store the class and non-class data in a set
 ######################
-# load nominal file into array
 filenameNominal = ""
-ncldata = list()
+ncldata = list()  # stores the non-class data in a list
 nrn = 0   # number of rows nominal file
 ncn = 0  # number of columns nominal file
-nonclass = set()
+nonclass = set()  # store the non-class data in a set
 ######################
-# compute total possible variable-value settings
-# count of values for each parameter
+# variables for storing the total number of combinations at 2,3, and 4-way testing
 nvals = []
 ncoms2 = 0
 ncoms3 = 0
 ncoms4 = 0
+# variables for storing the total values at 2,3, and 4-way testing
 totvals1 = 0
 totvals2 = 0
 totvals3 = 0
 totvals4 = 0
 ######################
-# 2-way variables
-######################
+# Variables to check the class and nominal files have loaded
+stateClassFile = False
+stateNominalFile = False
 
-
-# action for the BtnLoadFaultFile
+# action for the button object BtnLoadFaultFile
+# prompts the user to pick the class file and
+# then loads its contents into arrays
 def BtnLoadFaultFile_Click():
+    # prompts the user to select a file
     global filenameClass
-    filenameClass = filedialog.askopenfilename(initialdir="/", title="Select Class File", filetypes=(("csv files","*.csv"),("all files","*.*")))
+    filenameClass = filedialog.askopenfilename(initialdir="/", title="Select Class File")
+
+    # puts file name in the GUI
     txtFaultContents.insert(0, filenameClass)
-    stateClassFile = True
 
-    # load nominal, non-class file into array
-    global xcldata
-    with open(filenameClass) as csvfile:
-        xcldata = list(csv.reader(csvfile))
+    # checks that a destination was selected
+    if filenameClass != '':
+        global stateClassFile
+        stateClassFile = True
+        # load nominal, non-class file into array
+        global xcldata
+        with open(filenameClass) as csvfile:
+            xcldata = list(csv.reader(csvfile))
 
-    # put the data in the faultList to show on screen
-    for entry in xcldata:
-        faultList.insert(END, ' '.join(entry))
-    faultList.grid(row=2, column=1)
-    txtFaultInfo.config(command=faultList.yview)
+        # put the data in the faultList to show on screen
+        for entry in xcldata:
+            faultList.insert(END, ' '.join(entry))
+        faultList.grid(row=2, column=1)
+        txtFaultInfo.config(command=faultList.yview)
 
-    loadClassFile()
+        loadClassFile()
 
 # loads the class file and it contents into the GUI
 def loadClassFile():
@@ -82,6 +85,7 @@ def loadClassFile():
     global allclass
     allclass = [set() for _ in range(ncc)]  # store both class and non-class data
 
+    # populates the arrays with the class data
     for j in range(ncc):
         for i in range(nrc):
             xclass[j].add(xcldata[i][j])
@@ -90,24 +94,31 @@ def loadClassFile():
 
 
 # actions when load nominal file btn is clicked
+# prompts the user to pick a non-class/nominal file
 def nomButton_Click():
-    #prompts uder to pick a file from their computer
+    # prompts user to pick a file from their computer
     global filenameNominal
-    filenameNominal = filedialog.askopenfilename(initialdir="/", title="Select Nominal File", filetypes=(("csv files","*.csv"),("all files","*.*")))
+    filenameNominal = filedialog.askopenfilename(initialdir="/", title="Select Nominal File")
     txtNominalInfo.insert(0, filenameNominal)
+    global stateNominalFile
     stateNominalFile = True
 
-    btnTest['state'] = ACTIVE  # TODO -- add error checking later
+    # checks if the user selected a file
+    if filenameNominal != '':
+        # checks that there is a class and non-class file laoded
+        if stateNominalFile == True and stateClassFile == True:
+            btnTest['state'] = ACTIVE
 
-    global ncldata
-    with open(filenameNominal) as csvfile:
-        ncldata = list(csv.reader(csvfile))
+        # loads the non-class data
+        global ncldata
+        with open(filenameNominal) as csvfile:
+            ncldata = list(csv.reader(csvfile))
 
-    loadNomFile()
+        loadNomFile()
 
 # loads the nominal fault file into the program
 def loadNomFile():
-    #determines certain attributes about the nominal data
+    # determines certain attributes about the shape of the nominal data
     global nrn
     nrn = len(ncldata)
     global ncn
@@ -118,28 +129,35 @@ def loadNomFile():
     global nonclass
     nonclass = [set() for _ in range(ncn)]
 
+    # populates the arrays with non-class data
     for j in range(ncn):
         for i in range(nrn):
             nonclass[j].add(ncldata[i][j])
             allclass[j].add(ncldata[i][j])
 
 
-# action for the run button
+# action for when the run button is clicked
+# determines which combination levels are to be run
+# based on the users selections
 def btnTest_Click():
     computeValueSettings()
-    if var2Way.get() == 1:  # TODO -- FIX LATER
+    # checks which levels of coverage the user selected
+    if var2Way.get() == 1:
         get2WayResults()
+        produce2WayDifferenceStats()
     if var3Way.get() == 1:
         getThreeWayResults()
+        produceThreeWayDifferenceStats()
     if var4Way.get() == 1:
         getFourWayResults()
+        produceFourWayDifferenceStats()
     if var5Way.get() == 1:
         getFiveWayResults()
     if var6Way.get() == 1:
         getSixWayResults()
 
 
-# Computes the statistics needed for the finding all results
+# Computes the statistics needed for the finding making the difference plots
 def computeValueSettings():
     global nvals
     nvals = []
@@ -168,8 +186,8 @@ def computeValueSettings():
                    for k in range(j + 1, ncc - 1) for m in range(k + 1, ncc))
 
 
-# finds the two way results
-def get2WayResults():
+# creates the difference plots for two-way combinations
+def produce2WayDifferenceStats():
     # set up 2way difference sets
     start2way = datetime.datetime.now()
     diff2way = [list() for _ in range(ncc - 1)]
@@ -212,27 +230,6 @@ def get2WayResults():
             diff2way[i][j] = xclass2w[i][j].difference(nclass2w[i][j])
     sys.stderr.write("2way diffs done {0}\n".format(datetime.datetime.now()))
 
-    # output 2way diffs
-    t2_settings = ncoms2  # total possible 2-way settings of variables
-    heatmap2 = [[]]
-
-    for i in range(ncc - 1):
-        for j in range(i + 1, ncc):
-            for rf in range(1, nrc):
-                in_pass_count = 0
-                for rp in range(1, nrn):
-                    if (xcldata[rf][i] == ncldata[rp][i] and xcldata[rf][j] == ncldata[rp][j]):
-                        in_pass_count += 1
-
-                heatmap2.append(in_pass_count / (nrc - 1))
-                output = "{0} = {1} of cases, {2}, {3}, = {4},{5}\n".format(in_pass_count, in_pass_count / (nrc - 1),
-                                                                            xcldata[0][i], xcldata[0][j],
-                                                                            xcldata[rf][i], xcldata[rf][j])
-                TwoWayList.insert(END, ' '.join(output))
-
-    TwoWayList.grid(row=3, column=0, ipadx=200, ipady=150)
-    statBox2Way.config(command=TwoWayList.yview)
-
     for i in range(ncc):
         for rf in range(1, nrc):
             in_pass_count = 0
@@ -250,7 +247,7 @@ def get2WayResults():
         for j in range(i + 1, ncc):
             yvals2.append(len(xclass2w[i][j]) / (nvals[i] * nvals[j]))
     xvals2 = range(ncoms2)
-    ## Coverage as in CCM;  completeness
+    # Coverage as in CCM;  completeness
 
     plt.figure(figsize=(12, 5))
 
@@ -266,7 +263,7 @@ def get2WayResults():
     X2 = array(xvals2)
     Y2 = array(yvals2)
     Xd2 = X2 / sfx2
-    plot = plt.figure(figsize=(3,3))
+    plot = plt.figure(figsize=(3, 3))
     plt.figaspect(.5)
     plt.plot(Xd2, Y2, color="red", label="2-way")
 
@@ -276,8 +273,31 @@ def get2WayResults():
     canvas_widget.grid(row=3, column=0)
 
 
-# finds the three way results
-def getThreeWayResults():
+# collects the occurrences of two-way combination of class parameters in the
+# non-class(nclData) files
+def get2WayResults():
+    start_time = time.time()  # starts a timer to time to two-way combinations
+    output = ""
+    file = open("2Wayresults.txt", "a")  # opens the output file
+
+    # determines for each combination the number of occurrences in the non-class file
+    for i in range(ncc - 1):
+        for j in range(i + 1, ncc):
+            for rf in range(1, nrc):
+                in_pass_count = 0
+                for rp in range(1, nrn):
+                    if xcldata[rf][i] == ncldata[rp][i] and xcldata[rf][j] == ncldata[rp][j]:
+                        in_pass_count += 1
+                output = "{0} = {1} of cases, {2}, {3}, = {4},{5}\n".format(in_pass_count, in_pass_count / (nrn - 1), xcldata[0][i], xcldata[0][j], xcldata[rf][i], xcldata[rf][j])
+                file.write(output) # writes the result of the current combination to the output file
+
+    file.close()
+    print("2-Way runtime %s" % (time.time() - start_time))  # outputs the time the occurrence gathering took
+    getStatisticsFromOutput("2Wayresults.txt","2WayAnalysis.txt", "2WayZero.txt", "2WayHundred.txt", 2)
+
+
+# creates the difference plots for three-way combinations
+def produceThreeWayDifferenceStats():
     # set up 3way difference sets
     start3way = datetime.datetime.now()
     diff3way = [[list() for _ in range(ncc)] for _ in range(ncc)]
@@ -327,29 +347,6 @@ def getThreeWayResults():
                 diff3way[i][j][k] = xclass3w[i][j][k].difference(nclass3w[i][j][k])
     sys.stderr.write("3way diffs done {0}\n".format(datetime.datetime.now()))
 
-    # output 3way diffs
-    total_coms = 0
-
-    for i in range(ncc - 2):
-        for j in range(i + 1, ncc - 1):
-            for k in range(j + 1, ncc):
-                total_coms += 1
-                for rf in range(1, nrc):
-                    in_pass_count = 0
-                    for rp in range(1, nrn):
-                        if (xcldata[rf][i] == ncldata[rp][i] and xcldata[rf][j] == ncldata[rp][j] and xcldata[rf][k] ==
-                                ncldata[rp][k]):
-                            in_pass_count += 1
-                    output = "{0} = {1} of cases, {2}, {3}, {4} = {5},{6}, {7}\n".format(in_pass_count,
-                                                                                         in_pass_count / (nrc - 1),
-                                                                                         xcldata[0][i], xcldata[0][j],
-                                                                                         xcldata[0][k], xcldata[rf][i],
-                                                                                         xcldata[rf][j], xcldata[rf][k])
-                    ThreeWayList.insert(END, ' '.join(output))
-
-    ThreeWayList.grid(row=3, column=0, ipadx=200, ipady=150)
-    statBox3Way.config(command=ThreeWayList.yview)
-
     # display graph for diffs
     yvals3 = []
     for i in range(ncc - 2):
@@ -373,8 +370,40 @@ def getThreeWayResults():
     canvas_widget.grid(row=3, column=0)
 
 
-# determines the four way results
-def getFourWayResults():
+# collects the occurrences of three-way combination of class parameters in the
+# and non-class(nclData) file
+def getThreeWayResults():
+    # output 3way diffs
+    start_time = time.time()  # starts a timer to time to three-way combinations
+    file = open("3Wayresults.txt", "a")
+    output = ""
+
+    # determines for each combination the number of occurrences in the non-class file
+    for i in range(ncc - 2):
+        for j in range(i + 1, ncc - 1):
+            for k in range(j + 1, ncc):
+                total_coms += 1
+                for rf in range(1, nrc):
+                    in_pass_count = 0
+                    for rp in range(1, nrn):
+                        if (xcldata[rf][i] == ncldata[rp][i] and xcldata[rf][j] == ncldata[rp][j] and xcldata[rf][k] ==
+                                ncldata[rp][k]):
+                            in_pass_count += 1
+                    output = "{0} = {1} of cases, {2}, {3}, {4} = {5},{6}, {7}\n".format(in_pass_count,
+                                                                                         in_pass_count / (nrn - 1),
+                                                                                         xcldata[0][i], xcldata[0][j],
+                                                                                         xcldata[0][k], xcldata[rf][i],
+                                                                                         xcldata[rf][j], xcldata[rf][k])
+                    file.write(output)  # writes the result of the current combination to the output file
+
+    file.close()
+    print("3-Way runtime %s" % (time.time() - start_time))  # outputs the time the occurrence gathering took
+    getStatisticsFromOutput("3Wayresults.txt", "3WayAnalysis.txt", "3WayZero.txt", "3WayHundred.txt", 3)
+
+
+# generates the difference stats and outputs that to the GUI in the form of a graph
+# for 4-wy combinations
+def produceFourWayDifferenceStats():
     # set up 4way difference sets
     diff4way = [[[list() for _ in range(ncc)] for _ in range(ncc)] for _ in range(ncc)]
     diff4cnts = []
@@ -427,30 +456,6 @@ def getFourWayResults():
                     diff4way[i][j][k][m] = xclass4w[i][j][k][m].difference(nclass4w[i][j][k][m])
     sys.stderr.write("4way diffs done {0}\n".format(datetime.datetime.now()))
 
-    # output 4way diffs
-    for i in range(ncn-3):
-        for j in range(i+1, ncn-2):
-            for k in range(j+1, ncn-1):
-                for l in range(k+1, ncn):
-                    for rf in range(1, nrc):
-                        in_pass_count = 0
-                        for rp in range(1, nrn):
-                            if (xcldata[rf][i] == ncldata[rp][i] and xcldata[rf][j] == ncldata[rp][j] and xcldata[rf][k] == ncldata[rp][k] and xcldata[rf][l] == ncldata[rp][l]):
-                                in_pass_count += 1
-                        output = "{0} = {1} of cases, {2}, {3}, {4}, {5} = {6},{7}, {8}, {9}\n".format(in_pass_count,
-                                                                                             in_pass_count / (nrc - 1),
-                                                                                             xcldata[0][i],
-                                                                                             xcldata[0][j],
-                                                                                             xcldata[0][k],
-                                                                                             xcldata[0][l],
-                                                                                             xcldata[rf][i],
-                                                                                             xcldata[rf][j],
-                                                                                             xcldata[rf][k],
-                                                                                             xcldata[rf][l])
-                        FourWayList.insert(END, ' '.join(output))
-
-    FourWayList.grid(row=3, column=0, ipadx=200, ipady=150)
-    statBox4Way.config(command=FourWayList.yview)
     # 4way coverage plot
     yvals4 = []
     for i in range(ncc - 3):
@@ -474,8 +479,48 @@ def getFourWayResults():
     canvas_widget = canvas4Way.get_tk_widget()
     canvas_widget.grid(row=3, column=0)
 
+# collects the occurrences of four-way combination of class parameters in the
+# non-class(nclData) file
+def getFourWayResults():
+    start_time = time.time()  # starts a timer to time to four-way combinations
+    output = ""
+    file = open("4Wayresults.txt", "a")
 
+    # determines for each combination the number of occurrences in the non-class file
+    for i in range(ncn-3):
+        for j in range(i+1, ncn-2):
+            for k in range(j+1, ncn-1):
+                for l in range(k+1, ncn):
+                    for rf in range(1, nrc):
+                        in_pass_count = 0
+                        for rp in range(1, nrn):
+                            if (xcldata[rf][i] == ncldata[rp][i] and xcldata[rf][j] == ncldata[rp][j] and xcldata[rf][k] == ncldata[rp][k] and xcldata[rf][l] == ncldata[rp][l]):
+                                in_pass_count += 1
+                        output = "{0} = {1} of cases, {2}, {3}, {4}, {5} = {6},{7}, {8}, {9}\n".format(in_pass_count,
+                                                                                             in_pass_count / (nrn - 1),
+                                                                                             xcldata[0][i],
+                                                                                             xcldata[0][j],
+                                                                                             xcldata[0][k],
+                                                                                             xcldata[0][l],
+                                                                                             xcldata[rf][i],
+                                                                                             xcldata[rf][j],
+                                                                                             xcldata[rf][k],
+                                                                                             xcldata[rf][l])
+                        file.write(output)  # writes the result of the current combination to the output file
+
+    file.close()
+    print("4-Way runtime %s" % (time.time() - start_time))  # outputs the time the occurrence gathering took
+    getStatisticsFromOutput("4Wayresults.txt", "4WayAnalysis.txt", "4WayZero.txt", "4WayHundred.txt", 4)
+
+
+# collects the occurrences of five-way combination of class parameters in the
+# non-class(nclData) files
 def getFiveWayResults():
+    start_time = time.time()  # starts a timer to time to four-way combinations
+    output = ""
+    file = open("5Wayresults.txt", "a")
+
+    # determines for each combination the number of occurrences in the non-class file
     for i in range(ncn - 4):
         for j in range(i + 1, ncn - 3):
             for k in range(j + 1, ncn - 2):
@@ -484,12 +529,11 @@ def getFiveWayResults():
                         for rf in range(1, nrc):
                             in_pass_count = 0
                             for rp in range(1, nrn):
-                                if (xcldata[rf][i] == ncldata[rp][i] and xcldata[rf][j] == ncldata[rp][j] and
-                                        xcldata[rf][k] == ncldata[rp][k] and xcldata[rf][l] == ncldata[rp][l]):
+                                if (xcldata[rf][i] == ncldata[rp][i] and xcldata[rf][j] == ncldata[rp][j] and xcldata[rf][k] == ncldata[rp][k] and xcldata[rf][l] == ncldata[rp][l] and xcldata[rf][m] == ncldata[rp][m]):
                                     in_pass_count += 1
-                            output = "{0} = {1} of cases, {2}, {3}, {4}, {5}, {6} = {7},{8}, {9}, {10}\n".format(
+                            output = "{0} = {1} of cases, {2}, {3}, {4}, {5}, {6} = {7},{8}, {9}, {10}, {11}\n".format(
                                 in_pass_count,
-                                in_pass_count / (nrc - 1),
+                                in_pass_count / (nrn - 1),
                                 xcldata[0][i],
                                 xcldata[0][j],
                                 xcldata[0][k],
@@ -500,13 +544,21 @@ def getFiveWayResults():
                                 xcldata[rf][k],
                                 xcldata[rf][l],
                                 xcldata[rf][m])
-                            FiveWayList.insert(END, ' '.join(output))
+                            file.write(output) # writes the result of the current combination to the output file
 
-    FiveWayList.grid(row=3, column=0, ipadx=200, ipady=150)
-    statBox5Way.config(command=FiveWayList.yview)
+    file.close()
+    print("5-Way runtime %s" % (time.time() - start_time))  # outputs the time the occurrence gathering took
+    getStatisticsFromOutput("5Wayresults.txt", "5WayAnalysis.txt", "5WayZero.txt", "5WayHundred.txt", 5)
 
 
+# collects the occurrences of six-way combination of class parameters in the
+# non-class(nclData) files
 def getSixWayResults():
+    start_time = time.time()  # starts a timer to time to four-way combinations
+    output = ""
+    file = open("6Wayresults.txt", "a")
+
+    # determines for each combination the number of occurrences in the non-class file
     for i in range(ncn - 5):
         for j in range(i + 1, ncn - 4):
             for k in range(j + 1, ncn - 3):
@@ -517,11 +569,11 @@ def getSixWayResults():
                                 in_pass_count = 0
                                 for rp in range(1, nrn):
                                     if (xcldata[rf][i] == ncldata[rp][i] and xcldata[rf][j] == ncldata[rp][j] and
-                                            xcldata[rf][k] == ncldata[rp][k] and xcldata[rf][l] == ncldata[rp][l]):
+                                            xcldata[rf][k] == ncldata[rp][k] and xcldata[rf][l] == ncldata[rp][l] and xcldata[rf][m] == ncldata[rp][m] and xcldata[rf][n] == ncldata[rp][n]):
                                         in_pass_count += 1
-                                output = "{0} = {1} of cases, {2}, {3}, {4}, {5}, {6}, {7} = {8},{9}, {10}, {11}, {12}\n".format(
+                                output = "{0} = {1} of cases, {2}, {3}, {4}, {5}, {6}, {7} = {8},{9}, {10}, {11}, {12}, {13}\n".format(
                                     in_pass_count,
-                                    in_pass_count / (nrc - 1),
+                                    in_pass_count / (nrn - 1),
                                     xcldata[0][i],
                                     xcldata[0][j],
                                     xcldata[0][k],
@@ -534,10 +586,12 @@ def getSixWayResults():
                                     xcldata[rf][l],
                                     xcldata[rf][m],
                                     xcldata[rf][n])
-                                SixWayList.insert(END, ' '.join(output))
+                                file.write(output)  # writes the result of the current combination to the output file
 
-    SixWayList.grid(row=3, column=0, ipadx=200, ipady=150)
-    statBox6Way.config(command=SixWayList.yview)
+    file.close()
+    print("6-Way runtime %s" % (time.time() - start_time)) # outputs the time the occurrence gathering took
+    getStatisticsFromOutput("6Wayresults.txt", "6WayAnalysis.txt", "6WayZero.txt", "6WayHundred.txt", 6)
+
 
 # clears the UI objects
 def ClearUI():
@@ -560,6 +614,124 @@ def ClearUI():
     progress6Way['value'] = 0
 
 
+# takes the output file for a given interaction level and then generates
+# statistics about the number of occurrences of class combinations in non-class
+# file
+def getStatisticsFromOutput(infile, outfile, zeroFile, hundredFile, coverage):
+    fileIn = open(infile, 'r')
+    fileOut = open(outfile, 'w')
+    fileZero = open(zeroFile, 'w')
+    fileHundred = open(hundredFile, 'w')
+
+    # combination counts for each category
+    zeroCount = 0
+    zeroToNine = 0
+    tenToNineteen = 0
+    twentyToTwentynine = 0
+    thirtyToThirtynine = 0
+    fourtyToFoutynine = 0
+    fiftyToFiftynine = 0
+    sixtyToSixtynine = 0
+    seventyToSeventynine = 0
+    eightyToEightynine = 0
+    ninetyToNinetynine = 0
+
+    hundred = 0
+    count = 0
+    total = 0
+
+    # loops through the contents of the file
+    for line in fileIn:
+        count += 1
+        parts = line.split(" ")
+        percent = int(parts[0])
+        total += percent
+        # finds which group the combination occurrence number belongs to
+        if 10 > percent >= 0:
+            zeroToNine += 1
+            if percent == 0:
+                zeroCount += 1
+                if coverage == 2:
+                    fileZero.write(parts[6] + parts[8] + parts[10])
+                elif coverage == 3:
+                    fileZero.write(parts[5] + parts[7] + parts[9] + parts[11] + parts[12])
+                elif coverage == 4:
+                    fileZero.write(parts[5] + parts[7] + parts[9] + parts[11] + parts[13] + parts[14] + parts[15])
+                elif coverage == 5:
+                    fileZero.write(
+                        parts[5] + parts[7] + parts[9] + parts[11] + parts[13] + parts[15] + parts[16] + parts[17] +
+                        parts[18])
+                elif coverage == 6:
+                    fileZero.write(
+                        parts[5] + parts[7] + parts[9] + parts[11] + parts[13] + parts[15] + parts[17] + parts[18] +
+                        parts[19] + parts[20] + parts[21])
+
+        elif 20 > percent >= 10:
+            tenToNineteen += 1
+        elif 30 > percent >= 20:
+            twentyToTwentynine += 1
+        elif 40 > percent >= 30:
+            thirtyToThirtynine += 1
+        elif 50 > percent >= 40:
+            fourtyToFoutynine += 1
+        elif 60 > percent >= 50:
+            fiftyToFiftynine += 1
+        elif 70 > percent >= 60:
+            sixtyToSixtynine += 1
+        elif 80 > percent >= 70:
+            seventyToSeventynine += 1
+        elif 90 > percent >= 80:
+            eightyToEightynine += 1
+        elif 100 > percent >= 90:
+            ninetyToNinetynine += 1
+        elif percent == 100:
+            hundred += 1
+            if coverage == 2:
+                fileZero.write(parts[6] + parts[8] + parts[10])
+            elif coverage == 3:
+                fileZero.write(parts[5] + parts[7] + parts[9] + parts[11] + parts[12])
+            elif coverage == 4:
+                fileZero.write(parts[5] + parts[7] + parts[9] + parts[11] + parts[13] + parts[14] + parts[15])
+            elif coverage == 5:
+                fileZero.write(parts[5] + parts[7] + parts[9] + parts[11] + parts[13] + parts[15] + parts[16] + parts[17] + parts[18])
+            elif coverage == 6:
+                fileZero.write(parts[5] + parts[7] + parts[9] + parts[11] + parts[13] + parts[15] + parts[17] + parts[18] + parts[19] + parts[20] + parts[21])
+
+    # writes the important statistics to the output file
+    fileOut.write("Entries analyzed :" + str(count) + '\n')
+    fileOut.write("Average occurrence:" + str(total/count) + '\n')
+    fileOut.write("Zero Count:" + str(zeroCount) + '\n')
+    fileOut.write("Zero Percent:" + str(zeroCount/count) + '\n')
+    fileOut.write("0-9 Count:" + str(zeroToNine) + '\n')
+    fileOut.write("0-9 Percent:" + str(zeroToNine / count) + '\n')
+    fileOut.write("10-19 Count:" + str(tenToNineteen) + '\n')
+    fileOut.write("10-19 Percent:" + str(tenToNineteen / count) + '\n')
+    fileOut.write("20-29 Count:" + str(twentyToTwentynine) + '\n')
+    fileOut.write("20-29 Percent:" + str(twentyToTwentynine / count) + '\n')
+    fileOut.write("30-39 Count:" + str(thirtyToThirtynine) + '\n')
+    fileOut.write("30-39 Percent:" + str(thirtyToThirtynine / count) + '\n')
+    fileOut.write("40-49 Count:" + str(fourtyToFoutynine) + '\n')
+    fileOut.write("40-49 Percent:" + str(fourtyToFoutynine / count) + '\n')
+    fileOut.write("50-59 Count:" + str(fiftyToFiftynine) + '\n')
+    fileOut.write("50-59 Percent:" + str(fiftyToFiftynine / count) + '\n')
+    fileOut.write("60-69 Count:" + str(sixtyToSixtynine) + '\n')
+    fileOut.write("60-69 Percent:" + str(sixtyToSixtynine / count) + '\n')
+    fileOut.write("70-79 Count:" + str(seventyToSeventynine) + '\n')
+    fileOut.write("70-79 Percent:" + str(seventyToSeventynine / count) + '\n')
+    fileOut.write("80-89 Count:" + str(eightyToEightynine) + '\n')
+    fileOut.write("80-89 Percent:" + str(eightyToEightynine / count) + '\n')
+    fileOut.write("90-99 Count:" + str(ninetyToNinetynine) + '\n')
+    fileOut.write("90-99 Percent:" + str(ninetyToNinetynine / count) + '\n')
+    fileOut.write("100 Count:" + str(hundred) + '\n')
+    fileOut.write("100 Percent:" + str(hundred / count) + '\n')
+
+    # closes the file
+    fileIn.close()
+    fileOut.close()
+    fileHundred.close()
+    fileZero.close()
+
+
 ####################################################
 # creation of GUI window
 # Faultloc
@@ -568,18 +740,18 @@ root.title("Class feature difference analysis")
 topFrame = LabelFrame(root, text="File Information")
 topFrame.pack()
 
-# tabControl1
+# tabControl1 stores all the testing tabs
 tabControl1 = ttk.Notebook(root, width=750)
 
-# tabPage1
+# tabPage1 tab for two-way testing
 twoWayTab = Frame(tabControl1)
-# tabPage2
+# tabPage2 tab for three-way testing
 threeWayTab = Frame(tabControl1)
-# tabPage3
+# tabPage3 tab for four-way testing
 fourWayTab = Frame(tabControl1)
-# tabPage4
+# tabPage4 tab for five-way testing
 fiveWayTab = Frame(tabControl1)
-# tabPage5
+# tabPage5 tab for six-way testing
 sixWayTab = Frame(tabControl1)
 
 # adds the tabs to the tabControl1 -- the tab group object
@@ -594,23 +766,23 @@ tabControl1.pack()
 stateClassFile = False
 stateNominalFile = False
 
-# btnLoadFaultFile
+# btnLoadFaultFile allows the user to load class file
 btnLoadFaultFile = ttk.Button(topFrame, text="Load Class", width=10, command=BtnLoadFaultFile_Click)
 btnLoadFaultFile.grid(row=0, column=2)
-# txtFaultContents
+# txtFaultContents displays the contents of the class file
 txtFaultContents = Entry(topFrame, width=50)
 txtFaultContents.grid(row=0, column=1)
-# btnLoadNominalFile
+# btnLoadNominalFile allow the user to load the nominal file
 btnLoadFaultFile = ttk.Button(topFrame, text="Load Nominal", width=10, command=nomButton_Click)
 btnLoadFaultFile.grid(row=1, column=2)
-# txtNominalInfo
+# txtNominalInfo where the class file name is displayed
 txtNominalInfo = Entry(topFrame, width=50)
 txtNominalInfo.grid(row=1, column=1)
-# txtFaultInfo
+# txtFaultInfo where the nominal file name is displayed
 txtFaultInfo = Scrollbar(topFrame)
 txtFaultInfo.grid(row=2, column=1)
 faultList = Listbox(topFrame, yscrollcommand=txtFaultInfo.set, width=50) #this is where the data is actually displayed
-# btnTest
+# btnTest button to start the running of the occurence analysis
 btnTest = ttk.Button(topFrame, text="RUN", width=50, command=btnTest_Click, state=DISABLED)
 btnTest.grid(row=3, column=1)
 
@@ -637,72 +809,68 @@ var4Way = IntVar()
 var5Way = IntVar()
 var6Way = IntVar()
 
-# chk2WayTest
+# chk2WayTest checkbox to enable two-way testing
 chk2WayTest = ttk.Checkbutton(twoWayTab, text="Enabled", variable=var2Way)
 chk2WayTest.grid(sticky="w", row=0, column=0)
-# chk3WayTest
+# chk3WayTest checkbox to enable three-way testing
 chk3WayTest = ttk.Checkbutton(threeWayTab, text="Enabled", variable=var3Way)
 chk3WayTest.grid(sticky="w", row=0, column=0)
-# chk4WayTest
+# chk4WayTest checkbox to enable four-way testing
 chk4WayTest = ttk.Checkbutton(fourWayTab, text="Enabled", variable=var4Way)
 chk4WayTest.grid(sticky="w", row=0, column=0)
-# chk5WayTest
+# chk5WayTest checkbox to enable five-way testing
 chk5WayTest = ttk.Checkbutton(fiveWayTab, text="Enabled", variable=var5Way)
 chk5WayTest.grid(sticky="w", row=0, column=0)
-# chk6WayTest
+# chk6WayTest checkbox to enable six-way testing
 chk6WayTest = ttk.Checkbutton(sixWayTab, text="Enabled", variable=var6Way)
 chk6WayTest.grid(sticky="w", row=0, column=0)
 
-# statBox2way
-statBox2Way = Scrollbar(twoWayTab)
+# statBox2way place where the output is displayed for two-way combinations
+statBox2Way = tk.Text(twoWayTab, width=100)
 statBox2Way.grid(row=3)
-TwoWayList = Listbox(twoWayTab, yscrollcommand=statBox2Way.set, width=50)  # this is where the data is actually displayed
 
-# statBox3Way
-statBox3Way = Scrollbar(threeWayTab)
+# statBox3Way place where the output is displayed for three-way combinations
+statBox3Way = tk.Text(threeWayTab, width=100)
 statBox3Way.grid(row=3)
-ThreeWayList = Listbox(threeWayTab, yscrollcommand=statBox3Way.set, width=50)  # this is where the data is actually displayed
 
-# statBox4way
-statBox4Way = Scrollbar(fourWayTab)
+# statBox4way place where the output is displayed for four-way combinations
+statBox4Way = tk.Text(fourWayTab, width=100)
 statBox4Way.grid(row=3)
-FourWayList = Listbox(fourWayTab, yscrollcommand=statBox4Way.set, width=50) # this is where the data is actually displayed
-# statBox5Way
-statBox5Way = Scrollbar(fiveWayTab)
-statBox5Way.grid(row=3)
-FiveWayList = Listbox(fiveWayTab, yscrollcommand=statBox5Way.set, width=50)
-# statBox6Way
-statBox6Way = Scrollbar(sixWayTab)
-statBox6Way.grid(row=3)
-SixWayList = Listbox(sixWayTab, yscrollcommand=statBox6Way.set, width=50)
 
-# progress2way
+# statBox5Way place where the output is displayed for five-way combinations
+statBox5Way = tk.Text(fiveWayTab, width=100)
+statBox5Way.grid(row=3)
+
+# statBox6Way place where the output is displayed for six-way combinations
+statBox6Way = tk.Text(sixWayTab, width=100)
+statBox6Way.grid(row=3)
+
+# progress2way displays the level of progress for analysis of two-way combinations
 progress2Way = ttk.Progressbar(twoWayTab, orient=HORIZONTAL, mode='determinate', length=750)
 progress2Way.grid(sticky="w", row=1)
-# progress3way
+# progress3way displays the level of progress for analysis of three-way combinations
 progress3Way = ttk.Progressbar(threeWayTab, orient=HORIZONTAL, mode='determinate', length=750)
 progress3Way.grid(sticky="w", row=1)
-# progress4way
+# progress4way displays the level of progress for analysis of four-way combinations
 progress4Way = ttk.Progressbar(fourWayTab, orient=HORIZONTAL, mode='determinate', length=750)
 progress4Way.grid(sticky="w", row=1)
-# progress5way
+# progress5way displays the level of progress for analysis of five-way combinations
 progress5Way = ttk.Progressbar(fiveWayTab, orient=HORIZONTAL, mode='determinate', length=750)
 progress5Way.grid(sticky="w", row=1)
-# progress6way
+# progress6way displays the level of progress for analysis of six-way combinations
 progress6Way = ttk.Progressbar(sixWayTab, orient=HORIZONTAL, mode='determinate', length=750)
 progress6Way.grid(sticky="w", row=1)
 
-# fileContentsLabel formerly label3
+# fileContentsLabel -- directs the user to where the class file contents are displayed
 fileContentsLabel = Label(topFrame, text="Class File Contents:", anchor="w", width=20)
 fileContentsLabel.grid(row=2, column=0)
-# nominalLabel formerly label2
+# nominalLabel label to indicate where the nominal file name is displayed
 nominalLabel = Label(topFrame, text="Nominal File:", anchor="w", width=20)
 nominalLabel.grid(row=1, column=0)
-# classLabel formerly label1
+# classLabel label to indicate where the class file is displayed
 classLabel = Label(topFrame, text="Class File:", anchor="w", width=20)
 classLabel.grid(row=0, column=0)
 
 root.mainloop()
 ####################################################
-
 

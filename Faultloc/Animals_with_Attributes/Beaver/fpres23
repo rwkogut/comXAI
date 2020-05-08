@@ -1,0 +1,43 @@
+calc percnt fails detected in result file
+Found Class = 0
+Found nonClass = 10
+Found Unknowns = 0
+ of total 10
+Percent class detected = 0
+Ncoms in nonClass
+81281
+2032 per record
+Ncoms in class
+0
+0 per record
+Ccoms in nonClass
+0
+0 per record
+Ccoms in class
+1572
+39 per record
+Ccoms in nonClass should be < avg Ccoms in Class: 39 
+Ncoms in nonClass should be > avg Ncoms in Class: 0 
+Ccoms in class should be > avg Ccoms in nonClass: 0 
+Ncoms in class should be < avg Ncoms in nonClass: 2032 
+Determine class of class file records: Class, nonClass, Unknown
+   ::    
+>> nonClass
+        2  ::       2065 
+>> nonClass
+        0  ::       2440 
+>> nonClass
+       13  ::       2098 
+>> nonClass
+       64  ::       1900 
+>> nonClass
+      164  ::       1924 
+>> nonClass
+        5  ::       1858 
+>> nonClass
+      297  ::       1763 
+>> nonClass
+       12  ::       2068 
+>> nonClass
+        0  ::       2344 
+>> nonClass

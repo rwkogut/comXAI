@@ -1,0 +1,11 @@
+cp ../../2way-coms.csv tmp2
+grep . tmp2 >c2
+cp ../../3way-coms.csv tmp3
+grep . tmp3 >c3
+cp ../../4way-coms.csv tmp4
+grep . tmp4 >c4
+
+cp c2 nnotc2
+cp c3 nnotc3
+cp c4 nnotc4
+

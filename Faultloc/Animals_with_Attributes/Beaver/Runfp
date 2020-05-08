@@ -1,0 +1,30 @@
+# determine false positives by using n-tst; looking 
+# for presence of Class coms in non-class 
+rm fx*
+split -a 3 -l 1 n-tst.csv fx
+
+sh Rundata n-trn.csv c-trn.csv >tmpresult
+
+echo  calc percnt fails detected in result file
+
+tot=`grep -c ">>" tmpresult`
+
+fc=`grep -c ">> Class" tmpresult`
+echo "Found Class = \c"
+echo $fc
+pc=`grep -c ">> nonClass" tmpresult`
+echo "Found nonClass = \c"
+echo $pc
+uc=`grep -c ">> Unknown" tmpresult`
+echo "Found Unknowns = \c"
+echo $uc
+
+echo " of total \c"
+echo $tot
+
+pct=$(( 100*$fc / $tot ))
+
+echo "Percent class detected = \c"
+echo $pct
+
+less tmpresult
