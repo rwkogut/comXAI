@@ -44,6 +44,7 @@ totvals4 = 0
 stateClassFile = False
 stateNominalFile = False
 
+
 # action for the button object BtnLoadFaultFile
 # prompts the user to pick the class file and
 # then loads its contents into arrays
@@ -71,6 +72,7 @@ def BtnLoadFaultFile_Click():
         txtFaultInfo.config(command=faultList.yview)
 
         loadClassFile()
+
 
 # loads the class file and it contents into the GUI
 def loadClassFile():
@@ -105,7 +107,7 @@ def nomButton_Click():
 
     # checks if the user selected a file
     if filenameNominal != '':
-        # checks that there is a class and non-class file laoded
+        # checks that there is a class and non-class file loaded
         if stateNominalFile == True and stateClassFile == True:
             btnTest['state'] = ACTIVE
 
@@ -115,6 +117,7 @@ def nomButton_Click():
             ncldata = list(csv.reader(csvfile))
 
         loadNomFile()
+
 
 # loads the nominal fault file into the program
 def loadNomFile():
@@ -141,7 +144,10 @@ def loadNomFile():
 # based on the users selections
 def btnTest_Click():
     computeValueSettings()
+    #combinationAnalysis("/Users/richardkogut/PycharmProjects/projects/project-richie/Faultloc/5WayResultsChimp.txt","5WayCombFreqChimp.txt",filenameClass, 5)
     # checks which levels of coverage the user selected
+    if var1Way.get() == 1:
+        get1WayResults()
     if var2Way.get() == 1:
         get2WayResults()
         produce2WayDifferenceStats()
@@ -273,6 +279,27 @@ def produce2WayDifferenceStats():
     canvas_widget.grid(row=3, column=0)
 
 
+# collects the occurrences of one-way combination of class parameters in the
+# non-class(nclData) files
+def get1WayResults():
+    start_time = time.time()  # starts a timer to time to two-way combinations
+    output = ""
+    file = open("1WayresultsDalm.txt", "a")  # opens the output file
+
+    # determines for each combination the number of occurrences in the non-class file
+    for i in range(ncc):
+        for rf in range(1, nrc):
+            in_pass_count = 0
+            for rp in range(1, nrn):
+                if xcldata[rf][i] == ncldata[rp][i]:
+                    in_pass_count += 1
+            output = "{0} = {1} of cases {2} = {3}\n".format(in_pass_count, in_pass_count / (nrn - 1), xcldata[0][i], xcldata[rf][i])
+            file.write(output)  # writes the result of the current combination to the output file
+
+    file.close()
+    print("1-Way runtime %s" % (time.time() - start_time))  # outputs the time the occurrence gathering took
+
+
 # collects the occurrences of two-way combination of class parameters in the
 # non-class(nclData) files
 def get2WayResults():
@@ -288,8 +315,8 @@ def get2WayResults():
                 for rp in range(1, nrn):
                     if xcldata[rf][i] == ncldata[rp][i] and xcldata[rf][j] == ncldata[rp][j]:
                         in_pass_count += 1
-                output = "{0} = {1} of cases, {2}, {3}, = {4},{5}\n".format(in_pass_count, in_pass_count / (nrn - 1), xcldata[0][i], xcldata[0][j], xcldata[rf][i], xcldata[rf][j])
-                file.write(output) # writes the result of the current combination to the output file
+                output = "{0} = {1} of cases {2} {3} = {4} {5}\n".format(in_pass_count, in_pass_count / (nrn - 1), xcldata[0][i], xcldata[0][j], xcldata[rf][i], xcldata[rf][j])
+                file.write(output)  # writes the result of the current combination to the output file
 
     file.close()
     print("2-Way runtime %s" % (time.time() - start_time))  # outputs the time the occurrence gathering took
@@ -389,7 +416,7 @@ def getThreeWayResults():
                         if (xcldata[rf][i] == ncldata[rp][i] and xcldata[rf][j] == ncldata[rp][j] and xcldata[rf][k] ==
                                 ncldata[rp][k]):
                             in_pass_count += 1
-                    output = "{0} = {1} of cases, {2}, {3}, {4} = {5},{6}, {7}\n".format(in_pass_count,
+                    output = "{0} = {1} of cases, {2} {3} {4} = {5} {6} {7}\n".format(in_pass_count,
                                                                                          in_pass_count / (nrn - 1),
                                                                                          xcldata[0][i], xcldata[0][j],
                                                                                          xcldata[0][k], xcldata[rf][i],
@@ -479,6 +506,7 @@ def produceFourWayDifferenceStats():
     canvas_widget = canvas4Way.get_tk_widget()
     canvas_widget.grid(row=3, column=0)
 
+
 # collects the occurrences of four-way combination of class parameters in the
 # non-class(nclData) file
 def getFourWayResults():
@@ -496,7 +524,7 @@ def getFourWayResults():
                         for rp in range(1, nrn):
                             if (xcldata[rf][i] == ncldata[rp][i] and xcldata[rf][j] == ncldata[rp][j] and xcldata[rf][k] == ncldata[rp][k] and xcldata[rf][l] == ncldata[rp][l]):
                                 in_pass_count += 1
-                        output = "{0} = {1} of cases, {2}, {3}, {4}, {5} = {6},{7}, {8}, {9}\n".format(in_pass_count,
+                        output = "{0} = {1} of cases {2} {3} {4} {5} = {6} {7} {8} {9}\n".format(in_pass_count,
                                                                                              in_pass_count / (nrn - 1),
                                                                                              xcldata[0][i],
                                                                                              xcldata[0][j],
@@ -531,7 +559,7 @@ def getFiveWayResults():
                             for rp in range(1, nrn):
                                 if (xcldata[rf][i] == ncldata[rp][i] and xcldata[rf][j] == ncldata[rp][j] and xcldata[rf][k] == ncldata[rp][k] and xcldata[rf][l] == ncldata[rp][l] and xcldata[rf][m] == ncldata[rp][m]):
                                     in_pass_count += 1
-                            output = "{0} = {1} of cases, {2}, {3}, {4}, {5}, {6} = {7},{8}, {9}, {10}, {11}\n".format(
+                            output = "{0} = {1} of cases {2} {3} {4} {5} {6} = {7} {8} {9} {10} {11}\n".format(
                                 in_pass_count,
                                 in_pass_count / (nrn - 1),
                                 xcldata[0][i],
@@ -571,7 +599,7 @@ def getSixWayResults():
                                     if (xcldata[rf][i] == ncldata[rp][i] and xcldata[rf][j] == ncldata[rp][j] and
                                             xcldata[rf][k] == ncldata[rp][k] and xcldata[rf][l] == ncldata[rp][l] and xcldata[rf][m] == ncldata[rp][m] and xcldata[rf][n] == ncldata[rp][n]):
                                         in_pass_count += 1
-                                output = "{0} = {1} of cases, {2}, {3}, {4}, {5}, {6}, {7} = {8},{9}, {10}, {11}, {12}, {13}\n".format(
+                                output = "{0} = {1} of cases {2} {3} {4} {5} {6} {7} = {8} {9} {10} {11} {12} {13}\n".format(
                                     in_pass_count,
                                     in_pass_count / (nrn - 1),
                                     xcldata[0][i],
@@ -732,6 +760,60 @@ def getStatisticsFromOutput(infile, outfile, zeroFile, hundredFile, coverage):
     fileZero.close()
 
 
+def combinationAnalysis(infile, outfile, classfile, coverage):
+    fileIn = open(infile, 'r')
+    fileClass = open(classfile, 'r')
+    fileOut = open(outfile, 'w')
+
+    attributes = fileClass.readline().split(',')
+    for i in range(0, len(attributes)):
+        attributes[i] = attributes[i].strip(" ").strip("\n")
+
+    occurences = {i: 0 for i in attributes}
+    numbers = {i: 0 for i in attributes}
+    for line in fileIn:
+        parts = line.split(" ")
+        occurenceNum = int(parts[0])
+        if coverage == 2:
+            for attribute in attributes:
+                if attribute in parts[6] or attribute in parts[8] or attribute in parts[5]:
+                    occurences[attribute] += occurenceNum
+                    numbers[attribute] += 1
+        elif coverage == 3:
+            for attribute in attributes:
+                if attribute in parts[5] or attribute in parts[7] or attribute in parts[9] or attribute in parts[10] or attribute in parts[8] or attribute in parts[6]:
+                    occurences[attribute] += occurenceNum
+                    numbers[attribute] += 1
+        elif coverage == 4:
+            for attribute in attributes:
+                if attribute in parts[5] or attribute in parts[7] or attribute in parts[9] or attribute in parts[11] or attribute in parts[6] or attribute in parts[8] or attribute in parts[10] or attribute in parts[12]:
+                    occurences[attribute] += occurenceNum
+                    numbers[attribute] += 1
+        elif coverage == 5:
+            for attribute in attributes:
+                if attribute in parts[5] or attribute in parts[7] or attribute in parts[9] or attribute in parts[11] or attribute in parts[13] or attribute in parts[6] or attribute in parts[8] or attribute in parts[10] or attribute in parts[12] or attribute in parts[14]:
+                    occurences[attribute] += occurenceNum
+                    numbers[attribute] += 1
+        elif coverage == 6:
+            for attribute in attributes:
+                if attribute in parts[5] or attribute in parts[7] or attribute in parts[9] or attribute in parts[11] or attribute in parts[13] or attribute in parts[15] or attribute in parts[6] or attribute in parts[8] or attribute in parts[10] or attribute in parts[12] or attribute in parts[14] or attribute in parts[16]:
+                    occurences[attribute] += occurenceNum
+                    numbers[attribute] += 1
+
+    fileOut.write("attribute,occurrences,entries,average\n")
+    for entry in occurences:
+        fileOut.write(str(entry))
+        fileOut.write(",")
+        fileOut.write(str(occurences[entry]))
+        fileOut.write(",")
+        fileOut.write(str(numbers[entry]))
+        fileOut.write(",")
+        fileOut.write(str(occurences[entry]/numbers[entry]))
+        fileOut.write("\n")
+    print(occurences)
+    print(numbers)
+
+
 ####################################################
 # creation of GUI window
 # Faultloc
@@ -743,6 +825,8 @@ topFrame.pack()
 # tabControl1 stores all the testing tabs
 tabControl1 = ttk.Notebook(root, width=750)
 
+# tabPage0 tab for one-way testing
+oneWayTab = Frame(tabControl1)
 # tabPage1 tab for two-way testing
 twoWayTab = Frame(tabControl1)
 # tabPage2 tab for three-way testing
@@ -755,6 +839,7 @@ fiveWayTab = Frame(tabControl1)
 sixWayTab = Frame(tabControl1)
 
 # adds the tabs to the tabControl1 -- the tab group object
+tabControl1.add(oneWayTab, text="1-Way")
 tabControl1.add(twoWayTab, text="2-Way")
 tabControl1.add(threeWayTab, text="3-Way")
 tabControl1.add(fourWayTab, text="4-Way")
@@ -781,11 +866,15 @@ txtNominalInfo.grid(row=1, column=1)
 # txtFaultInfo where the nominal file name is displayed
 txtFaultInfo = Scrollbar(topFrame)
 txtFaultInfo.grid(row=2, column=1)
-faultList = Listbox(topFrame, yscrollcommand=txtFaultInfo.set, width=50) #this is where the data is actually displayed
+faultList = Listbox(topFrame, yscrollcommand=txtFaultInfo.set, width=50) # this is where the data is actually displayed
 # btnTest button to start the running of the occurence analysis
 btnTest = ttk.Button(topFrame, text="RUN", width=50, command=btnTest_Click, state=DISABLED)
 btnTest.grid(row=3, column=1)
 
+
+# rptBox1Way
+rptBox1Way = ttk.Entry(oneWayTab, width=50)
+rptBox1Way.grid(row=2, ipadx=200)
 # rptBox2way
 rptBox2Way = ttk.Entry(twoWayTab, width=50)
 rptBox2Way.grid(row=2, ipadx=200)
@@ -803,12 +892,17 @@ rptBox6Way = ttk.Entry(sixWayTab, width=50)
 rptBox6Way.grid(row=2, ipadx=200)
 
 # variables for the state of the checkboxes
+var1Way = IntVar()
 var2Way = IntVar()
 var3Way = IntVar()
 var4Way = IntVar()
 var5Way = IntVar()
 var6Way = IntVar()
 
+
+# chk1WayTest checkbox to enable one-way testing
+chk1WayTest = ttk.Checkbutton(oneWayTab, text="Enabled", variable=var1Way)
+chk1WayTest.grid(sticky="w", row=0, column=0)
 # chk2WayTest checkbox to enable two-way testing
 chk2WayTest = ttk.Checkbutton(twoWayTab, text="Enabled", variable=var2Way)
 chk2WayTest.grid(sticky="w", row=0, column=0)
@@ -825,26 +919,29 @@ chk5WayTest.grid(sticky="w", row=0, column=0)
 chk6WayTest = ttk.Checkbutton(sixWayTab, text="Enabled", variable=var6Way)
 chk6WayTest.grid(sticky="w", row=0, column=0)
 
+# statBox1way place where the output is displayed for two-way combinations
+statBox1Way = tk.Text(oneWayTab, width=100)
+statBox1Way.grid(row=3)
 # statBox2way place where the output is displayed for two-way combinations
 statBox2Way = tk.Text(twoWayTab, width=100)
 statBox2Way.grid(row=3)
-
 # statBox3Way place where the output is displayed for three-way combinations
 statBox3Way = tk.Text(threeWayTab, width=100)
 statBox3Way.grid(row=3)
-
 # statBox4way place where the output is displayed for four-way combinations
 statBox4Way = tk.Text(fourWayTab, width=100)
 statBox4Way.grid(row=3)
-
 # statBox5Way place where the output is displayed for five-way combinations
 statBox5Way = tk.Text(fiveWayTab, width=100)
 statBox5Way.grid(row=3)
-
 # statBox6Way place where the output is displayed for six-way combinations
 statBox6Way = tk.Text(sixWayTab, width=100)
 statBox6Way.grid(row=3)
 
+
+# progress1way displays the level of progress for analysis of two-way combinations
+progress1Way = ttk.Progressbar(oneWayTab, orient=HORIZONTAL, mode='determinate', length=750)
+progress1Way.grid(sticky="w", row=1)
 # progress2way displays the level of progress for analysis of two-way combinations
 progress2Way = ttk.Progressbar(twoWayTab, orient=HORIZONTAL, mode='determinate', length=750)
 progress2Way.grid(sticky="w", row=1)
