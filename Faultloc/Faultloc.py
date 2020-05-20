@@ -13,6 +13,8 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib import pyplot as plt
 from pylab import *
 import time
+import pandas as pd
+
 
 #####################
 filenameClass = ""  # path of the class file
@@ -43,6 +45,11 @@ totvals4 = 0
 # Variables to check the class and nominal files have loaded
 stateClassFile = False
 stateNominalFile = False
+stateOutputFile = False
+
+# output variables
+filenameOutput = ""
+coverageLevel = 2
 
 
 # action for the button object BtnLoadFaultFile
@@ -144,7 +151,6 @@ def loadNomFile():
 # based on the users selections
 def btnTest_Click():
     computeValueSettings()
-    #combinationAnalysis("/Users/richardkogut/PycharmProjects/projects/project-richie/Faultloc/5WayResultsChimp.txt","5WayCombFreqChimp.txt",filenameClass, 5)
     # checks which levels of coverage the user selected
     if var1Way.get() == 1:
         get1WayResults()
@@ -284,7 +290,7 @@ def produce2WayDifferenceStats():
 def get1WayResults():
     start_time = time.time()  # starts a timer to time to two-way combinations
     output = ""
-    file = open("1WayresultsDalm.txt", "a")  # opens the output file
+    file = open("1Wayresults.txt", "a")  # opens the output file
 
     # determines for each combination the number of occurrences in the non-class file
     for i in range(ncc):
@@ -320,7 +326,6 @@ def get2WayResults():
 
     file.close()
     print("2-Way runtime %s" % (time.time() - start_time))  # outputs the time the occurrence gathering took
-    getStatisticsFromOutput("2Wayresults.txt","2WayAnalysis.txt", "2WayZero.txt", "2WayHundred.txt", 2)
 
 
 # creates the difference plots for three-way combinations
@@ -425,7 +430,6 @@ def getThreeWayResults():
 
     file.close()
     print("3-Way runtime %s" % (time.time() - start_time))  # outputs the time the occurrence gathering took
-    getStatisticsFromOutput("3Wayresults.txt", "3WayAnalysis.txt", "3WayZero.txt", "3WayHundred.txt", 3)
 
 
 # generates the difference stats and outputs that to the GUI in the form of a graph
@@ -538,7 +542,6 @@ def getFourWayResults():
 
     file.close()
     print("4-Way runtime %s" % (time.time() - start_time))  # outputs the time the occurrence gathering took
-    getStatisticsFromOutput("4Wayresults.txt", "4WayAnalysis.txt", "4WayZero.txt", "4WayHundred.txt", 4)
 
 
 # collects the occurrences of five-way combination of class parameters in the
@@ -576,7 +579,6 @@ def getFiveWayResults():
 
     file.close()
     print("5-Way runtime %s" % (time.time() - start_time))  # outputs the time the occurrence gathering took
-    getStatisticsFromOutput("5Wayresults.txt", "5WayAnalysis.txt", "5WayZero.txt", "5WayHundred.txt", 5)
 
 
 # collects the occurrences of six-way combination of class parameters in the
@@ -618,7 +620,6 @@ def getSixWayResults():
 
     file.close()
     print("6-Way runtime %s" % (time.time() - start_time)) # outputs the time the occurrence gathering took
-    getStatisticsFromOutput("6Wayresults.txt", "6WayAnalysis.txt", "6WayZero.txt", "6WayHundred.txt", 6)
 
 
 # clears the UI objects
@@ -640,6 +641,67 @@ def ClearUI():
     progress4Way['value'] = 0
     progress5Way['value'] = 0
     progress6Way['value'] = 0
+
+
+def btnLoadOutput_Click():
+    # prompts the user to select a file
+    global filenameOutput
+    filenameOutput = filedialog.askopenfilename(initialdir="/", title="Select Output File")
+
+    # puts file name in the GUI
+    txtOutputInfo.insert(0, filenameOutput)
+
+    # checks that a destination was selected
+    if filenameOutput != '':
+        runOutputBtn['state'] = ACTIVE
+
+
+def btnLoadOutputRun_Click():
+    global coverageLevel
+    getStatisticsFromOutput(filenameOutput, str(coverageLevel) + "WayAnalysis.txt", str(coverageLevel) + "WayZero.txt", str(coverageLevel) + "WayHundred.txt", coverageLevel)
+    combinationAnalysis(filenameOutput, str(coverageLevel) + "WayCombFreq.txt", filenameClass, coverageLevel)
+    #createDataFrame(filenameOutput, coverageLevel)
+
+
+def createDataFrame(fileName, coverage):
+    df = pd.DataFrame()
+    fileIn = open(fileName, 'r')
+    occurencenumbers = []
+    occurrencepct = []
+    param1 = []
+    param2 = []
+    val1 = []
+    val2 = []
+    for line in fileIn:
+        parts = line.split(" ")
+        occurencenumbers.append(int(parts[0]))
+        occurrencepct.append(parts[2])
+        if parts[5] == '':
+            param1.append(parts[6].strip(','))
+            param2.append(parts[8].strip(','))
+            val1.append(parts[10].split(',')[0])
+            val2.append(parts[10].split(',')[1].strip('\n'))
+        else:
+            param1.append(parts[5].strip(','))
+            param2.append(parts[7].strip(','))
+            val1.append(parts[9].split(',')[0])
+            val2.append(parts[9].split(',')[1].strip('\n'))
+
+    df['Occurrences'] = occurencenumbers
+    df['PCT'] = occurrencepct
+    df['Param1'] = param1
+    df['Param2'] = param2
+    df['Value1'] = val1
+    df['Value2'] = val2
+
+
+    histOccurrence = plt.figure(figsize=(7, 3))
+    plt.hist(occurencenumbers)
+
+    # create a canvas and display it on the screen
+    canvas1 = FigureCanvasTkAgg(histOccurrence, twoWayTab)
+    canvas_widget = canvas1.get_tk_widget()
+    canvas_widget.grid(row=3, column=0)
 
 
 # takes the output file for a given interaction level and then generates
@@ -786,7 +848,7 @@ def combinationAnalysis(infile, outfile, classfile, coverage):
                     numbers[attribute] += 1
         elif coverage == 4:
             for attribute in attributes:
-                if attribute in parts[5] or attribute in parts[7] or attribute in parts[9] or attribute in parts[11] or attribute in parts[6] or attribute in parts[8] or attribute in parts[10] or attribute in parts[12]:
+                if attribute in parts[5] or attribute in parts[7] or attribute in parts[9] or attribute in parts[11]:
                     occurences[attribute] += occurenceNum
                     numbers[attribute] += 1
         elif coverage == 5:
@@ -812,6 +874,11 @@ def combinationAnalysis(infile, outfile, classfile, coverage):
         fileOut.write("\n")
     print(occurences)
     print(numbers)
+
+
+def change_dropdown(*args):
+    global coverageLevel
+    coverageLevel = tkvar.get()
 
 
 ####################################################
@@ -867,9 +934,34 @@ txtNominalInfo.grid(row=1, column=1)
 txtFaultInfo = Scrollbar(topFrame)
 txtFaultInfo.grid(row=2, column=1)
 faultList = Listbox(topFrame, yscrollcommand=txtFaultInfo.set, width=50) # this is where the data is actually displayed
-# btnTest button to start the running of the occurence analysis
+# btnTest button to start the running of the occurrence analysis
 btnTest = ttk.Button(topFrame, text="RUN", width=50, command=btnTest_Click, state=DISABLED)
 btnTest.grid(row=3, column=1)
+
+#####################################
+# output info
+# btnLoadOutput loads the output file to be analyzed
+btnLoadOutput = ttk.Button(topFrame, text="Load Output", command=btnLoadOutput_Click)
+btnLoadOutput.grid(row=4, column=2)
+txtOutputInfo = Entry(topFrame, width=50)
+txtOutputInfo.grid(row=4, column=1)
+# outputLabel label to indicate where the output file name is displayed
+outputLabel = Label(topFrame, text="Output File:", anchor="w", width=20)
+outputLabel.grid(row=4, column=0)
+
+# drop down menu
+levels = {2,3,4,5,6}
+tkvar = StringVar(root)
+tkvar.set(2) # set the default option
+popupMenu = OptionMenu(topFrame, tkvar, *levels)
+coverageLabel = Label(topFrame, text="Choose a Coverage")
+coverageLabel.grid(row=5, column=0)
+popupMenu.grid(row=5, column=1)
+# run output analysis
+runOutputBtn = ttk.Button(topFrame, text="Run Output Analysis", command=btnLoadOutputRun_Click, state=DISABLED)
+runOutputBtn.grid(row=5, column=2)
+tkvar.trace('w', change_dropdown)
+################################################
 
 
 # rptBox1Way
