@@ -291,7 +291,7 @@ def get1WayResults():
     start_time = time.time()  # starts a timer to time to two-way combinations
     output = ""
     file = open("1Wayresults.txt", "a")  # opens the output file
-
+    file.write("occurrences,pct,param,value,nrn\n")
     # determines for each combination the number of occurrences in the non-class file
     for i in range(ncc):
         for rf in range(1, nrc):
@@ -299,7 +299,7 @@ def get1WayResults():
             for rp in range(1, nrn):
                 if xcldata[rf][i] == ncldata[rp][i]:
                     in_pass_count += 1
-            output = "{0} = {1} of cases {2} = {3}\n".format(in_pass_count, in_pass_count / (nrn - 1), xcldata[0][i], xcldata[rf][i])
+            output = "{0},{1},{2},{3},{4}\n".format(in_pass_count, in_pass_count / (nrn - 1), xcldata[0][i], xcldata[rf][i], nrn-1)
             file.write(output)  # writes the result of the current combination to the output file
 
     file.close()
@@ -312,7 +312,7 @@ def get2WayResults():
     start_time = time.time()  # starts a timer to time to two-way combinations
     output = ""
     file = open("2Wayresults.txt", "a")  # opens the output file
-
+    file.write("occurrences,pct,param1,param2,value1,value2,nrn\n")
     # determines for each combination the number of occurrences in the non-class file
     for i in range(ncc - 1):
         for j in range(i + 1, ncc):
@@ -321,7 +321,7 @@ def get2WayResults():
                 for rp in range(1, nrn):
                     if xcldata[rf][i] == ncldata[rp][i] and xcldata[rf][j] == ncldata[rp][j]:
                         in_pass_count += 1
-                output = "{0} = {1} of cases {2} {3} = {4} {5}\n".format(in_pass_count, in_pass_count / (nrn - 1), xcldata[0][i], xcldata[0][j], xcldata[rf][i], xcldata[rf][j])
+                output = "{0},{1},{2},{3},{4},{5},{6}\n".format(in_pass_count, in_pass_count / (nrn - 1), xcldata[0][i], xcldata[0][j], xcldata[rf][i], xcldata[rf][j],nrn-1)
                 file.write(output)  # writes the result of the current combination to the output file
 
     file.close()
@@ -408,24 +408,23 @@ def getThreeWayResults():
     # output 3way diffs
     start_time = time.time()  # starts a timer to time to three-way combinations
     file = open("3Wayresults.txt", "a")
-    output = ""
+    file.write("occurrences,pct,param1,param2,param3,value1,value2,value3,nrn\n")
 
     # determines for each combination the number of occurrences in the non-class file
     for i in range(ncc - 2):
         for j in range(i + 1, ncc - 1):
             for k in range(j + 1, ncc):
-                total_coms += 1
                 for rf in range(1, nrc):
                     in_pass_count = 0
                     for rp in range(1, nrn):
                         if (xcldata[rf][i] == ncldata[rp][i] and xcldata[rf][j] == ncldata[rp][j] and xcldata[rf][k] ==
                                 ncldata[rp][k]):
                             in_pass_count += 1
-                    output = "{0} = {1} of cases, {2} {3} {4} = {5} {6} {7}\n".format(in_pass_count,
+                    output = "{0},{1},{2},{3},{4},{5},{6},{7},{8}\n".format(in_pass_count,
                                                                                          in_pass_count / (nrn - 1),
                                                                                          xcldata[0][i], xcldata[0][j],
                                                                                          xcldata[0][k], xcldata[rf][i],
-                                                                                         xcldata[rf][j], xcldata[rf][k])
+                                                                                         xcldata[rf][j], xcldata[rf][k],nrn-1)
                     file.write(output)  # writes the result of the current combination to the output file
 
     file.close()
@@ -517,7 +516,7 @@ def getFourWayResults():
     start_time = time.time()  # starts a timer to time to four-way combinations
     output = ""
     file = open("4Wayresults.txt", "a")
-
+    file.write("occurrences,pct,param1,param2,param3,param4,value1,value2,value3,value4,nrn\n")
     # determines for each combination the number of occurrences in the non-class file
     for i in range(ncn-3):
         for j in range(i+1, ncn-2):
@@ -528,7 +527,7 @@ def getFourWayResults():
                         for rp in range(1, nrn):
                             if (xcldata[rf][i] == ncldata[rp][i] and xcldata[rf][j] == ncldata[rp][j] and xcldata[rf][k] == ncldata[rp][k] and xcldata[rf][l] == ncldata[rp][l]):
                                 in_pass_count += 1
-                        output = "{0} = {1} of cases {2} {3} {4} {5} = {6} {7} {8} {9}\n".format(in_pass_count,
+                        output = "{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10}\n".format(in_pass_count,
                                                                                              in_pass_count / (nrn - 1),
                                                                                              xcldata[0][i],
                                                                                              xcldata[0][j],
@@ -537,7 +536,7 @@ def getFourWayResults():
                                                                                              xcldata[rf][i],
                                                                                              xcldata[rf][j],
                                                                                              xcldata[rf][k],
-                                                                                             xcldata[rf][l])
+                                                                                             xcldata[rf][l],nrn-1)
                         file.write(output)  # writes the result of the current combination to the output file
 
     file.close()
@@ -550,6 +549,7 @@ def getFiveWayResults():
     start_time = time.time()  # starts a timer to time to four-way combinations
     output = ""
     file = open("5Wayresults.txt", "a")
+    file.write("occurrences,pct,param1,param2,param3,param4,param5,value1,value2,value3,value4,value5,nrn\n")
 
     # determines for each combination the number of occurrences in the non-class file
     for i in range(ncn - 4):
@@ -562,7 +562,7 @@ def getFiveWayResults():
                             for rp in range(1, nrn):
                                 if (xcldata[rf][i] == ncldata[rp][i] and xcldata[rf][j] == ncldata[rp][j] and xcldata[rf][k] == ncldata[rp][k] and xcldata[rf][l] == ncldata[rp][l] and xcldata[rf][m] == ncldata[rp][m]):
                                     in_pass_count += 1
-                            output = "{0} = {1} of cases {2} {3} {4} {5} {6} = {7} {8} {9} {10} {11}\n".format(
+                            output = "{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12}\n".format(
                                 in_pass_count,
                                 in_pass_count / (nrn - 1),
                                 xcldata[0][i],
@@ -574,7 +574,7 @@ def getFiveWayResults():
                                 xcldata[rf][j],
                                 xcldata[rf][k],
                                 xcldata[rf][l],
-                                xcldata[rf][m])
+                                xcldata[rf][m],nrn-1)
                             file.write(output) # writes the result of the current combination to the output file
 
     file.close()
@@ -587,6 +587,7 @@ def getSixWayResults():
     start_time = time.time()  # starts a timer to time to four-way combinations
     output = ""
     file = open("6Wayresults.txt", "a")
+    file.write("occurrences,pct,param1,param2,param3,param4,param5,param6,value1,value2,value3,value4,value5,value6,nrn\n")
 
     # determines for each combination the number of occurrences in the non-class file
     for i in range(ncn - 5):
@@ -601,7 +602,7 @@ def getSixWayResults():
                                     if (xcldata[rf][i] == ncldata[rp][i] and xcldata[rf][j] == ncldata[rp][j] and
                                             xcldata[rf][k] == ncldata[rp][k] and xcldata[rf][l] == ncldata[rp][l] and xcldata[rf][m] == ncldata[rp][m] and xcldata[rf][n] == ncldata[rp][n]):
                                         in_pass_count += 1
-                                output = "{0} = {1} of cases {2} {3} {4} {5} {6} {7} = {8} {9} {10} {11} {12} {13}\n".format(
+                                output = "{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14}\n".format(
                                     in_pass_count,
                                     in_pass_count / (nrn - 1),
                                     xcldata[0][i],
@@ -615,7 +616,7 @@ def getSixWayResults():
                                     xcldata[rf][k],
                                     xcldata[rf][l],
                                     xcldata[rf][m],
-                                    xcldata[rf][n])
+                                    xcldata[rf][n],nrn-1)
                                 file.write(output)  # writes the result of the current combination to the output file
 
     file.close()
@@ -658,9 +659,9 @@ def btnLoadOutput_Click():
 
 def btnLoadOutputRun_Click():
     global coverageLevel
-    getStatisticsFromOutput(filenameOutput, str(coverageLevel) + "WayAnalysis.txt", str(coverageLevel) + "WayZero.txt", str(coverageLevel) + "WayHundred.txt", coverageLevel)
-    combinationAnalysis(filenameOutput, str(coverageLevel) + "WayCombFreq.txt", filenameClass, coverageLevel)
-    #createDataFrame(filenameOutput, coverageLevel)
+    #getStatisticsFromOutput(filenameOutput, str(coverageLevel) + "WayAnalysis.txt", str(coverageLevel) + "WayZero.txt", str(coverageLevel) + "WayHundred.txt", coverageLevel)
+    #combinationAnalysis(filenameOutput, str(coverageLevel) + "WayCombFreq.txt", filenameClass, coverageLevel)
+    createDataFrame(filenameOutput, coverageLevel)
 
 
 def createDataFrame(fileName, coverage):
@@ -672,20 +673,19 @@ def createDataFrame(fileName, coverage):
     param2 = []
     val1 = []
     val2 = []
+    count = 0
+    highestpossible = 0
     for line in fileIn:
-        parts = line.split(" ")
-        occurencenumbers.append(int(parts[0]))
-        occurrencepct.append(parts[2])
-        if parts[5] == '':
-            param1.append(parts[6].strip(','))
-            param2.append(parts[8].strip(','))
-            val1.append(parts[10].split(',')[0])
-            val2.append(parts[10].split(',')[1].strip('\n'))
-        else:
-            param1.append(parts[5].strip(','))
-            param2.append(parts[7].strip(','))
-            val1.append(parts[9].split(',')[0])
-            val2.append(parts[9].split(',')[1].strip('\n'))
+        if count != 0:
+            parts = line.split(",")
+            occurencenumbers.append(int(parts[0]))
+            occurrencepct.append(float(parts[1]))
+            param1.append(parts[2].strip(','))
+            param2.append(parts[3].strip(','))
+            val1.append(parts[4])
+            val2.append(parts[5].strip('\n'))
+            highestpossible = int(parts[6].strip('\n'))
+        count += 1
 
     df['Occurrences'] = occurencenumbers
     df['PCT'] = occurrencepct
@@ -694,9 +694,25 @@ def createDataFrame(fileName, coverage):
     df['Value1'] = val1
     df['Value2'] = val2
 
-
     histOccurrence = plt.figure(figsize=(7, 3))
-    plt.hist(occurencenumbers)
+
+    bins_numbers = []
+    for i in range(highestpossible):
+        bins_numbers.append(i)
+
+    n, bins, patches = plt.hist(occurencenumbers, bins=bins_numbers)
+    plt.title('Combination Occurrences')
+    plt.xlabel('Occurrences')
+    plt.ylabel('Frequency')
+    total = 0
+    for i in n:
+        total += i
+
+    patch_count = 0
+    for patch in patches:
+        if patch_count % 2 == 0:
+            patch.set_facecolor('r')
+        patch_count += 1
 
     # create a canvas and display it on the screen
     canvas1 = FigureCanvasTkAgg(histOccurrence, twoWayTab)
@@ -733,7 +749,7 @@ def getStatisticsFromOutput(infile, outfile, zeroFile, hundredFile, coverage):
     # loops through the contents of the file
     for line in fileIn:
         count += 1
-        parts = line.split(" ")
+        parts = line.split(",")
         percent = int(parts[0])
         total += percent
         # finds which group the combination occurrence number belongs to
@@ -742,20 +758,15 @@ def getStatisticsFromOutput(infile, outfile, zeroFile, hundredFile, coverage):
             if percent == 0:
                 zeroCount += 1
                 if coverage == 2:
-                    fileZero.write(parts[6] + parts[8] + parts[10])
+                    fileZero.write(parts[2] + "," + parts[3] + "," + parts[4] + "," + parts[5])
                 elif coverage == 3:
-                    fileZero.write(parts[5] + parts[7] + parts[9] + parts[11] + parts[12])
+                    fileZero.write(parts[2] + "," + parts[3] + "," + parts[4] + "," + parts[5] + parts[6] + "," + parts[7])
                 elif coverage == 4:
-                    fileZero.write(parts[5] + parts[7] + parts[9] + parts[11] + parts[13] + parts[14] + parts[15])
+                    fileZero.write(parts[2] + "," + parts[3] + "," + parts[4] + "," + parts[5] + parts[6] + "," + parts[7] + "," + parts[8] + "," + parts[9])
                 elif coverage == 5:
-                    fileZero.write(
-                        parts[5] + parts[7] + parts[9] + parts[11] + parts[13] + parts[15] + parts[16] + parts[17] +
-                        parts[18])
+                    fileZero.write(parts[2] + "," + parts[3] + "," + parts[4] + "," + parts[5] + parts[6] + "," + parts[7] + "," + parts[8] + "," + parts[9] + "," + parts[10] + "," + parts[11])
                 elif coverage == 6:
-                    fileZero.write(
-                        parts[5] + parts[7] + parts[9] + parts[11] + parts[13] + parts[15] + parts[17] + parts[18] +
-                        parts[19] + parts[20] + parts[21])
-
+                    fileZero.write(parts[2] + "," + parts[3] + "," + parts[4] + "," + parts[5] + parts[6] + "," + parts[7] + "," + parts[8] + "," + parts[9] + "," + parts[10] + "," + parts[11] + "," + parts[12] + "," + parts[13])
         elif 20 > percent >= 10:
             tenToNineteen += 1
         elif 30 > percent >= 20:
@@ -777,15 +788,21 @@ def getStatisticsFromOutput(infile, outfile, zeroFile, hundredFile, coverage):
         elif percent == 100:
             hundred += 1
             if coverage == 2:
-                fileZero.write(parts[6] + parts[8] + parts[10])
+                fileHundred.write(parts[2] + "," + parts[3] + "," + parts[4] + "," + parts[5])
             elif coverage == 3:
-                fileZero.write(parts[5] + parts[7] + parts[9] + parts[11] + parts[12])
+                fileHundred.write(parts[2] + "," + parts[3] + "," + parts[4] + "," + parts[5] + parts[6] + "," + parts[7])
             elif coverage == 4:
-                fileZero.write(parts[5] + parts[7] + parts[9] + parts[11] + parts[13] + parts[14] + parts[15])
+                fileHundred.write(
+                    parts[2] + "," + parts[3] + "," + parts[4] + "," + parts[5] + parts[6] + "," + parts[7] + "," +
+                    parts[8] + "," + parts[9])
             elif coverage == 5:
-                fileZero.write(parts[5] + parts[7] + parts[9] + parts[11] + parts[13] + parts[15] + parts[16] + parts[17] + parts[18])
+                fileHundred.write(
+                    parts[2] + "," + parts[3] + "," + parts[4] + "," + parts[5] + parts[6] + "," + parts[7] + "," +
+                    parts[8] + "," + parts[9] + "," + parts[10] + "," + parts[11])
             elif coverage == 6:
-                fileZero.write(parts[5] + parts[7] + parts[9] + parts[11] + parts[13] + parts[15] + parts[17] + parts[18] + parts[19] + parts[20] + parts[21])
+                fileHundred.write(
+                    parts[2] + "," + parts[3] + "," + parts[4] + "," + parts[5] + parts[6] + "," + parts[7] + "," +
+                    parts[8] + "," + parts[9] + "," + parts[10] + "," + parts[11] + "," + parts[12] + "," + parts[13])
 
     # writes the important statistics to the output file
     fileOut.write("Entries analyzed :" + str(count) + '\n')
@@ -829,36 +846,36 @@ def combinationAnalysis(infile, outfile, classfile, coverage):
 
     attributes = fileClass.readline().split(',')
     for i in range(0, len(attributes)):
-        attributes[i] = attributes[i].strip(" ").strip("\n")
+        attributes[i] = attributes[i].strip("\n")
 
     occurences = {i: 0 for i in attributes}
     numbers = {i: 0 for i in attributes}
     for line in fileIn:
-        parts = line.split(" ")
+        parts = line.split(",")
         occurenceNum = int(parts[0])
         if coverage == 2:
             for attribute in attributes:
-                if attribute in parts[6] or attribute in parts[8] or attribute in parts[5]:
+                if attribute in parts[2] or attribute in parts[3]:
                     occurences[attribute] += occurenceNum
                     numbers[attribute] += 1
         elif coverage == 3:
             for attribute in attributes:
-                if attribute in parts[5] or attribute in parts[7] or attribute in parts[9] or attribute in parts[10] or attribute in parts[8] or attribute in parts[6]:
+                if attribute in parts[2] or attribute in parts[3] or attribute in parts[4]:
                     occurences[attribute] += occurenceNum
                     numbers[attribute] += 1
         elif coverage == 4:
             for attribute in attributes:
-                if attribute in parts[5] or attribute in parts[7] or attribute in parts[9] or attribute in parts[11]:
+                if attribute in parts[2] or attribute in parts[3] or attribute in parts[4] or attribute in parts[5]:
                     occurences[attribute] += occurenceNum
                     numbers[attribute] += 1
         elif coverage == 5:
             for attribute in attributes:
-                if attribute in parts[5] or attribute in parts[7] or attribute in parts[9] or attribute in parts[11] or attribute in parts[13] or attribute in parts[6] or attribute in parts[8] or attribute in parts[10] or attribute in parts[12] or attribute in parts[14]:
+                if attribute in parts[2] or attribute in parts[3] or attribute in parts[4] or attribute in parts[5] or attribute in parts[6]:
                     occurences[attribute] += occurenceNum
                     numbers[attribute] += 1
         elif coverage == 6:
             for attribute in attributes:
-                if attribute in parts[5] or attribute in parts[7] or attribute in parts[9] or attribute in parts[11] or attribute in parts[13] or attribute in parts[15] or attribute in parts[6] or attribute in parts[8] or attribute in parts[10] or attribute in parts[12] or attribute in parts[14] or attribute in parts[16]:
+                if attribute in parts[2] or attribute in parts[3] or attribute in parts[4] or attribute in parts[5] or attribute in parts[6] or attribute in parts[7]:
                     occurences[attribute] += occurenceNum
                     numbers[attribute] += 1
 
