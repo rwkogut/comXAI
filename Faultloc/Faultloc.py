@@ -290,7 +290,7 @@ def produce2WayDifferenceStats():
 def get1WayResults():
     start_time = time.time()  # starts a timer to time to two-way combinations
     output = ""
-    file = open("1Wayresults.txt", "a")  # opens the output file
+    file = open("1Wayresults.csv", "a")  # opens the output file
     file.write("occurrences,pct,param,value,nrn\n")
     # determines for each combination the number of occurrences in the non-class file
     for i in range(ncc):
@@ -311,7 +311,7 @@ def get1WayResults():
 def get2WayResults():
     start_time = time.time()  # starts a timer to time to two-way combinations
     output = ""
-    file = open("2Wayresults.txt", "a")  # opens the output file
+    file = open("2Wayresults.csv", "a")  # opens the output file
     file.write("occurrences,pct,param1,param2,value1,value2,nrn\n")
     # determines for each combination the number of occurrences in the non-class file
     for i in range(ncc - 1):
@@ -407,7 +407,7 @@ def produceThreeWayDifferenceStats():
 def getThreeWayResults():
     # output 3way diffs
     start_time = time.time()  # starts a timer to time to three-way combinations
-    file = open("3Wayresults.txt", "a")
+    file = open("3Wayresults.csv", "a")
     file.write("occurrences,pct,param1,param2,param3,value1,value2,value3,nrn\n")
 
     # determines for each combination the number of occurrences in the non-class file
@@ -515,7 +515,7 @@ def produceFourWayDifferenceStats():
 def getFourWayResults():
     start_time = time.time()  # starts a timer to time to four-way combinations
     output = ""
-    file = open("4Wayresults.txt", "a")
+    file = open("4Wayresults.csv", "a")
     file.write("occurrences,pct,param1,param2,param3,param4,value1,value2,value3,value4,nrn\n")
     # determines for each combination the number of occurrences in the non-class file
     for i in range(ncn-3):
@@ -548,7 +548,7 @@ def getFourWayResults():
 def getFiveWayResults():
     start_time = time.time()  # starts a timer to time to four-way combinations
     output = ""
-    file = open("5Wayresults.txt", "a")
+    file = open("5Wayresults.csv", "a")
     file.write("occurrences,pct,param1,param2,param3,param4,param5,value1,value2,value3,value4,value5,nrn\n")
 
     # determines for each combination the number of occurrences in the non-class file
@@ -586,7 +586,7 @@ def getFiveWayResults():
 def getSixWayResults():
     start_time = time.time()  # starts a timer to time to four-way combinations
     output = ""
-    file = open("6Wayresults.txt", "a")
+    file = open("6Wayresults.csv", "a")
     file.write("occurrences,pct,param1,param2,param3,param4,param5,param6,value1,value2,value3,value4,value5,value6,nrn\n")
 
     # determines for each combination the number of occurrences in the non-class file
@@ -669,10 +669,10 @@ def createDataFrame(fileName, coverage):
     fileIn = open(fileName, 'r')
     occurencenumbers = []
     occurrencepct = []
-    param1 = []
-    param2 = []
-    val1 = []
-    val2 = []
+    #param1 = []
+    #param2 = []
+    #val1 = []
+    #val2 = []
     count = 0
     highestpossible = 0
     for line in fileIn:
@@ -680,44 +680,75 @@ def createDataFrame(fileName, coverage):
             parts = line.split(",")
             occurencenumbers.append(int(parts[0]))
             occurrencepct.append(float(parts[1]))
-            param1.append(parts[2].strip(','))
-            param2.append(parts[3].strip(','))
-            val1.append(parts[4])
-            val2.append(parts[5].strip('\n'))
-            highestpossible = int(parts[6].strip('\n'))
+            #param1.append(parts[2].strip(','))
+            #param2.append(parts[3].strip(','))
+            #val1.append(parts[4])
+            #val2.append(parts[5].strip('\n'))
+            if int(coverage) == 2:
+                highestpossible = int(parts[6].strip('\n'))
+            elif int(coverage) == 3:
+                highestpossible = int(parts[8].strip('\n'))
+            elif int(coverage) == 4:
+                highestpossible = int(parts[10].strip('\n'))
+            elif int(coverage) == 5:
+                highestpossible = int(parts[12].strip('\n'))
+            elif int(coverage) == 6:
+                highestpossible = int(parts[14].strip('\n'))
         count += 1
 
     df['Occurrences'] = occurencenumbers
     df['PCT'] = occurrencepct
-    df['Param1'] = param1
-    df['Param2'] = param2
-    df['Value1'] = val1
-    df['Value2'] = val2
+    #df['Param1'] = param1
+    #df['Param2'] = param2
+    #df['Value1'] = val1
+    #df['Value2'] = val2
 
+    # creates a histogram with the relative number of frequencies
     histOccurrence = plt.figure(figsize=(7, 3))
-
     bins_numbers = []
-    for i in range(highestpossible):
+    for i in range(highestpossible+1):
         bins_numbers.append(i)
-
     n, bins, patches = plt.hist(occurencenumbers, bins=bins_numbers)
-    plt.title('Combination Occurrences')
-    plt.xlabel('Occurrences')
-    plt.ylabel('Frequency')
+
+    # finds total number of combinations
     total = 0
     for i in n:
         total += i
 
-    patch_count = 0
-    for patch in patches:
-        if patch_count % 2 == 0:
-            patch.set_facecolor('r')
-        patch_count += 1
+    # turns the occurrence numbers into proportions
+    new_n = []
+    for num in n:
+        new_n.append(num / total)
+    new_n.append(0)
+
+    # create bar chart and display it on screen
+    barOccurence = plt.figure(figsize=(7, 3))
+    bar(bins_numbers, new_n)
+    plt.title('Combination Occurrences')
+    plt.xlabel('Occurrences')
+    plt.ylabel('Proportion')
 
     # create a canvas and display it on the screen
-    canvas1 = FigureCanvasTkAgg(histOccurrence, twoWayTab)
-    canvas_widget = canvas1.get_tk_widget()
-    canvas_widget.grid(row=3, column=0)
+    if int(coverage) == 2:
+        canvas1 = FigureCanvasTkAgg(barOccurence, twoWayTab)
+        canvas_widget = canvas1.get_tk_widget()
+        canvas_widget.grid(row=3, column=0)
+    elif int(coverage) == 3:
+        canvas1 = FigureCanvasTkAgg(barOccurence, threeWayTab)
+        canvas_widget = canvas1.get_tk_widget()
+        canvas_widget.grid(row=3, column=0)
+    elif int(coverage) == 4:
+        canvas1 = FigureCanvasTkAgg(barOccurence, fourWayTab)
+        canvas_widget = canvas1.get_tk_widget()
+        canvas_widget.grid(row=3, column=0)
+    elif int(coverage) == 5:
+        canvas1 = FigureCanvasTkAgg(barOccurence, fiveWayTab)
+        canvas_widget = canvas1.get_tk_widget()
+        canvas_widget.grid(row=3, column=0)
+    elif int(coverage) == 6:
+        canvas1 = FigureCanvasTkAgg(barOccurence, sixWayTab)
+        canvas_widget = canvas1.get_tk_widget()
+        canvas_widget.grid(row=3, column=0)
 
 
 # takes the output file for a given interaction level and then generates
