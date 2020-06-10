@@ -156,13 +156,13 @@ def btnTest_Click():
         get1WayResults()
     if var2Way.get() == 1:
         get2WayResults()
-        produce2WayDifferenceStats()
+        #produce2WayDifferenceStats()
     if var3Way.get() == 1:
         getThreeWayResults()
-        produceThreeWayDifferenceStats()
+        #produceThreeWayDifferenceStats()
     if var4Way.get() == 1:
         getFourWayResults()
-        produceFourWayDifferenceStats()
+        #produceFourWayDifferenceStats()
     if var5Way.get() == 1:
         getFiveWayResults()
     if var6Way.get() == 1:
@@ -694,6 +694,8 @@ def createDataFrame(fileName, coverage):
                 highestpossible = int(parts[12].strip('\n'))
             elif int(coverage) == 6:
                 highestpossible = int(parts[14].strip('\n'))
+            elif int(coverage) == 1:
+                highestpossible = int(parts[4].strip('\n'))
         count += 1
 
     df['Occurrences'] = occurencenumbers
@@ -727,6 +729,7 @@ def createDataFrame(fileName, coverage):
     plt.title('Combination Occurrences')
     plt.xlabel('Occurrences')
     plt.ylabel('Proportion')
+    plt.savefig(fileName.strip(".csv") + ".png")
 
     # create a canvas and display it on the screen
     if int(coverage) == 2:
@@ -749,6 +752,18 @@ def createDataFrame(fileName, coverage):
         canvas1 = FigureCanvasTkAgg(barOccurence, sixWayTab)
         canvas_widget = canvas1.get_tk_widget()
         canvas_widget.grid(row=3, column=0)
+    elif int(coverage) == 1:
+        canvas1 = FigureCanvasTkAgg(barOccurence, oneWayTab)
+        canvas_widget = canvas1.get_tk_widget()
+        canvas_widget.grid(row=3, column=0)
+
+    #fig1, ax1 = plt.subplots()
+    #ax1.pie(n[0:5], labels=bins_numbers[0:5])
+    #ax1.figure.set_size_inches(3,3)
+    #ax1.axis('equal')
+    #canvas2 = FigureCanvasTkAgg(fig1, oneWayTab)
+    #canvas_widget2 = canvas2.get_tk_widget()
+    #canvas_widget2.grid(row=3, column=0)
 
 
 # takes the output file for a given interaction level and then generates
@@ -998,7 +1013,7 @@ outputLabel = Label(topFrame, text="Output File:", anchor="w", width=20)
 outputLabel.grid(row=4, column=0)
 
 # drop down menu
-levels = {2,3,4,5,6}
+levels = {1,2,3,4,5,6}
 tkvar = StringVar(root)
 tkvar.set(2) # set the default option
 popupMenu = OptionMenu(topFrame, tkvar, *levels)
